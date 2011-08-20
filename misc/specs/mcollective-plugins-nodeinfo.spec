@@ -1,11 +1,11 @@
 %define plugindir %{_libexecdir}/mcollective/mcollective
 %define agent_name nodeinfo 
-%define gitrev 5603a0
+%define gitrev 26323ed 
 
 Name:      mcollective-plugins-nodeinfo
 Summary:   Mcollective plugin agent that lets you get information on nodes 
 Version:   1.0
-Release:   1%{?dist}
+Release:   2%{?dist}
 License:   GPLv3
 Group:     Development/Libraries
 #Source0:   %{name}-%{version}.tar.gz 
@@ -39,6 +39,8 @@ rm -rf %{buildroot}
 %{plugindir}/agent/%{agent_name}.ddl
 
 %changelog
+* Sat Aug 20 2011 Louis Coilliot
+- improvements to the ddl
 * Fri Aug 12 2011 Louis Coilliot
 - inspired with a spec file from Dan Carley
 (https://gist.github.com/957029)

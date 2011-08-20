@@ -1,11 +1,11 @@
 %define plugindir %{_libexecdir}/mcollective/mcollective
 %define agent_name agentinfo 
-%define gitrev 25603a0
+%define gitrev 26323ed 
 
 Name:      mcollective-plugins-agentinfo
 Summary:   Mcollective plugin agent that lets you get information on agents 
 Version:   1.0
-Release:   2%{?dist}
+Release:   3%{?dist}
 License:   GPLv3
 Group:     Development/Libraries
 #Source0:   %{name}-%{version}.tar.gz 
@@ -39,6 +39,8 @@ rm -rf %{buildroot}
 %{plugindir}/agent/%{agent_name}.ddl
 
 %changelog
+* Sat Aug 20 2011 Louis Coilliot
+- improvements to the ddl
 * Fri Aug 12 2011 Louis Coilliot
 - fix of file permissions, spec description and code comments
 * Thu Aug 11 2011 Louis Coilliot
