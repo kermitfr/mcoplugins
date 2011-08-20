@@ -1,6 +1,6 @@
 %define plugindir %{_libexecdir}/mcollective/mcollective
 %define agent_name nodeinfo 
-%define gitrev 2e13ddf
+%define gitrev 5603a0
 
 Name:      mcollective-plugins-nodeinfo
 Summary:   Mcollective plugin agent that lets you get information on nodes 
