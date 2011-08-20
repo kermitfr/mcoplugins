@@ -1,6 +1,6 @@
 %define plugindir %{_libexecdir}/mcollective/mcollective
 %define agent_name agentinfo 
-%define gitrev 2e13ddf
+%define gitrev 25603a0
 
 Name:      mcollective-plugins-agentinfo
 Summary:   Mcollective plugin agent that lets you get information on agents 
@@ -9,7 +9,7 @@ Release:   2%{?dist}
 License:   GPLv3
 Group:     Development/Libraries
 #Source0:   %{name}-%{version}.tar.gz 
-Source0:   kermit-mcollective-plugins-%{gitrev}.tar.gz 
+Source0:   thinkfr-mcoplugins-%{gitrev}.tar.gz 
 Requires:  mcollective >= 1.1.0
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildArch: noarch
@@ -20,7 +20,7 @@ The agentinfo agent lets you get information on actions, inputs,
 outputs of agents on your mcollective nodes.
 
 %prep
-%setup -n kermit-mcollective-plugins-%{gitrev} 
+%setup -n thinkfr-mcoplugins-%{gitrev} 
 
 %build
 

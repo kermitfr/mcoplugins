@@ -9,7 +9,7 @@ Release:   1%{?dist}
 License:   GPLv3
 Group:     Development/Libraries
 #Source0:   %{name}-%{version}.tar.gz 
-Source0:   kermit-mcollective-plugins-%{gitrev}.tar.gz 
+Source0:   thinkfr-mcoplugins-%{gitrev}.tar.gz 
 Requires:  mcollective >= 1.1.0
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildArch: noarch
@@ -20,7 +20,7 @@ The nodeinfo agent lets you get basic information like the agents,
 some facts and puppet classes of a mcollective node 
 
 %prep
-%setup -n kermit-mcollective-plugins-%{gitrev} 
+%setup -n thinkfr-mcoplugins-%{gitrev} 
 
 %build
 
