@@ -21,13 +21,15 @@ module MCollective
 
               if Gem.available?('ruby-rpm')
                 # I love APIs and gems !
-                @db = RPM::DB.new.each do |pkg|
+                @db = RPM::DB.open
+                @db.each do |pkg|
                     rpmlist << { 'name' => pkg.name,
                                  'version' => pkg.version.v,
                                  'release' => pkg.version.r,
                                  'architecture' => pkg.arch,
                                  'epoch' => pkg.version.e }
                 end
+                @db.close
 
               else
                 # I prefer running a shell command !
