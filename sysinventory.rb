@@ -1,10 +1,3 @@
-begin
-  require 'rpm'
-rescue LoadError
-  # we have a failback option anyway
-  nil
-end
-
 module MCollective
     module Agent
         class Sysinventory<RPC::Agent
@@ -21,15 +14,19 @@ module MCollective
 
               if Gem.available?('ruby-rpm')
                 # I love APIs and gems !
-                db = RPM::DB.open
-                db.each do |pkg|
+                require 'rpm'
+                rpmdb = RPM::DB.new
+                rpmdb.each do |pkg|
                     rpmlist << { 'name' => pkg.name,
                                  'version' => pkg.version.v,
                                  'release' => pkg.version.r,
                                  'architecture' => pkg.arch,
                                  'epoch' => pkg.version.e }
                 end
-                db.close
+                # The two following lines seem necessary to close the rpm db
+                # and avoid locks/hangups with rpm 
+                rpmdb.close
+                GC.start
 
               else
                 # I prefer running a shell command !
