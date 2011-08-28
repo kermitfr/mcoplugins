@@ -31,7 +31,8 @@ module MCollective
                     distrel = File.open('/etc/redhat-release','r')
                     lsbdistdesc=distrel.gets
                 rescue
-                    lsbdistdesc='Unknown'
+                    #lsbdistdesc='Unknown'
+                    lsbdistdesc=`uname -s -v`
                 end
 
                 facts = {'architecture' => RUBY_PLATFORM,
