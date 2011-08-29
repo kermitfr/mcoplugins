@@ -32,7 +32,7 @@ module MCollective
                     lsbdistdesc=distrel.gets
                 rescue
                     #lsbdistdesc='Unknown'
-                    lsbdistdesc=`uname -s -v`
+                    lsbdistdesc=`uname -s -v`.chomp
                 end
 
                 facts = {'architecture' => RUBY_PLATFORM,
