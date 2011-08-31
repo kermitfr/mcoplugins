@@ -5,7 +5,7 @@
 Name:      mcollective-plugins-nodeinfo
 Summary:   Mcollective plugin agent that lets you get information on nodes 
 Version:   1.0
-Release:   3%{?dist}
+Release:   4%{?dist}
 License:   GPLv3
 Group:     Development/Libraries
 #Source0:   %{name}-%{version}.tar.gz 
@@ -39,6 +39,8 @@ rm -rf %{buildroot}
 %{plugindir}/agent/%{agent_name}.ddl
 
 %changelog
+* Wed Aug 31 2011 Louis Coilliot
+- facts chomped
 * Sun Aug 28 2011 Louis Coilliot
 - system information compatible with AIX 
 * Sat Aug 20 2011 Louis Coilliot
