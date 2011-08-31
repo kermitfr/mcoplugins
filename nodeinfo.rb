@@ -29,7 +29,7 @@ module MCollective
 
                 begin
                     distrel = File.open('/etc/redhat-release','r')
-                    lsbdistdesc=distrel.gets
+                    lsbdistdesc=distrel.gets.chomp
                 rescue
                     #lsbdistdesc='Unknown'
                     lsbdistdesc=`uname -s -v`.chomp
