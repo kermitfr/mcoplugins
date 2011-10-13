@@ -11,7 +11,7 @@ action "testing", :description => "puppet agent --test" do
           :prompt      => "Puppet master server",
           :description => "The server to query",
           :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d]+$',
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
           :optional    => true,
           :maxlength   => 30
 
