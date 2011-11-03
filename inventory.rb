@@ -104,8 +104,9 @@ module MCollective
             def jboss_ver(jbosshome)
                 twiddlecmd = "#{jbosshome}/bin/twiddle.sh -q get "
                 twiddlecmd << "'jboss.system:type=Server' VersionNumber"
-                jbossver = %x[#{twiddlecmd}].split('=')[1].chomp
+                jbossver = %x[#{twiddlecmd}].split('=')[1]
                 jbossver = nil unless $? == 0
+                jbossver.chomp! if jbossver
                 File.delete('twiddle.log') if File.exists?('twiddle.log') 
                 jbossver
             end
