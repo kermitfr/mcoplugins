@@ -216,11 +216,9 @@ module MCollective
                 jsonprettyout.write(JSON.pretty_generate(inventory))
                 jsonprettyout.close
                 
-                cmd1 = "ruby /usr/local/bin/kermit/queue/send.rb #{jsoncompactfname}"
-                cmd2 = "ruby /usr/local/bin/kermit/queue/send.rb #{jsonprettyfname}"
+                cmd = "ruby /usr/local/bin/kermit/queue/send.rb #{jsoncompactfname}"
                 
-                %x[#{cmd1}]
-                %x[#{cmd2}]
+                %x[#{cmd}]
                 
                 reply['result'] = jsoncompactfname
             end
