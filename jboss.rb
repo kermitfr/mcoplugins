@@ -16,20 +16,86 @@
 require 'xmlsimple'
 require 'json'
 require 'socket'
+require 'curb'
+require 'inifile'
 
 module MCollective
     module Agent
-        class Inventory<RPC::Agent
-            metadata :name        => "Inventory information for apps and sys",
-                     :description => "Inventory for apps and sys",
+        class Jboss<RPC::Agent
+            metadata :name        => "Manage JBoss",
+                     :description => "Jboss inventory and app. deployment",
                      :author      => "Louis Coilliot",
                      :license     => "",
                      :version     => "0.1",
                      :url         => "",
-                     :timeout     => 60
+                     :timeout     => 120
 
-            action "jboss" do
-                jbossinv        
+            # JBoss inventory
+            action "inventory" do
+                inventory        
+            end
+
+            # List applications available on a repository 
+            action "applist" do
+                result = {:applist => [], :apptype => ""}
+                validate :apptype, String
+                apptype = request[:apptype]
+                c =  Curl::Easy.perform(repourl)
+                pattern = /<a.*?href="(.*#{apptype}?)"/
+                m=c.body_str.scan(pattern)
+                result[:applist] = m.map{ |item| item.first }
+                result[:apptype] = apptype
+                reply.data = result
+            end
+
+            # List the deployed applications of the running instance 
+            action "deploylist" do
+                webdeployment 
+            end
+
+            # Deploy an application in JBoss 
+            action "deploy" do
+                result = {:status => ""}
+
+                validate :appfile, String
+                validate :instancename, String
+
+                appfile = request[:appfile]
+                instancename = request[:instancename]
+
+                jbosshome = guess_jboss_home1(run_cmd)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+
+                deployfolder="#{jbosshome}/server/#{instancename}/deploy/"
+                reply.fail! "Error - Unable to find #{deployfolder}" \
+                            unless File.directory? deployfolder
+
+                result[:status] = download(repourl, appfile, deployfolder)
+                reply.data = result
+            end
+
+            action "undeploy" do
+                result = {:status => ""}
+
+                validate :appfile, String
+                validate :instancename, String
+
+                appfile = request[:appfile]
+                instancename = request[:instancename]
+
+                jbosshome = guess_jboss_home1(run_cmd)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+
+                deployfolder="#{jbosshome}/server/#{instancename}/deploy/"
+                reply.fail! "Error - Unable to find #{deployfolder}" \
+                            unless File.directory? deployfolder
+
+                File.delete("#{deployfolder}#{appfile}")                
+
+                result[:status] = "#{deployfolder}#{appfile}"
+                reply.data = result
             end
 
             private
@@ -154,8 +220,45 @@ module MCollective
                 end
                 applist
             end
+            
+            # List the applications in the running instance, querying JMX
+            def webdeployment 
+                jbosshome = guess_jboss_home1(run_cmd)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+                twiddlecmd = "#{jbosshome}/bin/twiddle.sh"
+                reply.fail! "Error - Unable to find #{twiddlecmd}" \
+                            unless File.readable? twiddlecmd 
+                twiddleparams = "-q query 'jboss.web.deployment:*'"
 
-            def jbossinv
+                cmd = "#{twiddlecmd} #{twiddleparams}" 
+                applist = Array.new
+                %x[#{cmd}].each_line do |line|
+                    applist << line.split(':')[1].chomp    
+                end
+                reply.data = { :applist => applist } 
+            end
+
+
+            # Returns the url of the app repository from a ini file 
+            def repourl
+                section = 'as'
+                mainconf = '/etc/kermit/kermit.cfg'
+                ini=IniFile.load(mainconf, :comment => '#')
+                params = ini[section]
+                params['apprepo']
+            end
+
+            # Download a file with Curl 
+            def download(repourl, file, targetfolder)
+                url="#{repourl}/#{file}".gsub(/([^:])\/\//, '\1/')
+                fileout = "#{targetfolder}/#{file}".gsub(/([^:])\/\//, '\1/')
+                Curl::Easy.download(url,filename=fileout)
+                fileout
+            end
+
+            # Main Jboss inventory
+            def inventory 
                 jbinit  = '/etc/init.d/jboss'
                 
                 archivetypes = [ 'war' , 'ear' ] 
@@ -220,7 +323,7 @@ module MCollective
                 
                 %x[#{cmd}]
                 
-                reply['result'] = jsoncompactfname
+                reply.data = { :result => jsoncompactfname }
             end
         end
     end
