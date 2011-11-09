@@ -48,23 +48,36 @@ module MCollective
 
 	    action "get_databases" do
 		Log.debug "Executing get_databases Action"
-	        query = "SELECT pg_database.datname as \\\"Database\\\",pg_user.usename as \\\"Owner\\\"FROM pg_database, pg_user WHERE pg_database.datdba = pg_user.usesysid UNION SELECT pg_database.datname as \\\"Database\\\", NULL as \\\"Owner\\\"FROM pg_database WHERE pg_database.datdba NOT IN (SELECT usesysid FROM pg_user) ORDER BY \\\"Database\\\""
-		cmd = "su - postgres -c 'psql -tc \"#{query}\"'"
-		Log.debug "Command RUN: #{cmd}"
+		conffile = '/etc/kermit/kermit.cfg'
+                section = 'postgresql'
+
+                db_user = getkey(conffile, section, 'dbuser')
+                databaselist = get_databases(db_user)
+		reply['status'] = {"databases" => databaselist}
+	    end
+
+	    def get_databases(db_user) 
+	    	query = "SELECT pg_database.datname as \\\"Database\\\",pg_user.usename as \\\"Owner\\\"FROM pg_database, pg_user WHERE pg_database.datdba = pg_user.usesysid UNION SELECT pg_database.datname as \\\"Database\\\", NULL as \\\"Owner\\\"FROM pg_database WHERE pg_database.datdba NOT IN (SELECT usesysid FROM pg_user) ORDER BY \\\"Database\\\""
+                cmd = "psql -U #{db_user} -tc \"#{query}\""
+                Log.debug "Command RUN: #{cmd}"
                 result = %x[#{cmd}]
-		databaselist  = Array.new
-		result.each {|row| 
-			content = row.split('|')
-			dbname = content[0]
-			owner = content[1]
-			#owner = owner.gsub!('\n','')
-			data = {
-  			  "name" => dbname,
-  			  "owner" => owner
-			}
-			databaselist << data
-		}
-                reply['status'] = {"databases" => databaselist}
+                databaselist  = Array.new
+		if not result.nil? and not result.empty?
+                  result.each {|row|
+                        content = row.split('|')
+			if not content.nil? and not content.empty? and not content[0].nil? and not content[0].empty? and not content[1].nil? and not content[1].empty?
+                          dbname = content[0].strip
+                          owner = content[1].strip
+                          #owner = owner.gsub!('\n',' ')
+                          data = {
+                            "name" => dbname,
+                            "owner" => owner
+                          }
+                          databaselist << data
+                       end
+                  }
+                end
+		databaselist
 	    end
 
             def getkey(conffile, section, key)
