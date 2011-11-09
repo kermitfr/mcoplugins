@@ -39,7 +39,39 @@ end
 action "get_databases", :description => "Get list of databases in the local PostgreSQL instance" do
     display :always
 
-    output :status,
+    output :databases,
            :description => "List of database",
            :display_as  => "Databases"
+end
+
+action "get_database_size", :description => "Get Size of the Given Database" do
+    display :always
+
+    input :dbname,
+          :prompt      => "Database Name",
+          :description => "Name of the database to check",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    output :size,
+           :description => "Database Size",
+           :display_as  => "Size"
+end
+
+action "get_tables", :description => "Get Tables in the Given Database" do
+    display :always
+
+    input :dbname,
+          :prompt      => "Database Name",
+          :description => "Name of the database to check",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    output :tables,
+           :description => "List of tables",
+           :display_as  => "Tables"
 end

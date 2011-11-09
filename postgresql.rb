@@ -50,20 +50,44 @@ module MCollective
 
 	    action "get_databases" do
 		Log.debug "Executing get_databases Action"
-		conffile = '/etc/kermit/kermit.cfg'
-                section = 'postgresql'
-
-                db_user = getkey(conffile, section, 'dbuser')
-                databaselist = get_databases(db_user)
+                databaselist = get_databases
 		reply['status'] = {"databases" => databaselist}
 	    end
 
-	    def get_databases(db_user) 
+	    action "get_database_size" do
+		Log.debug "Executing get_databases Action"
+		db_name = request[:dbname]
+		result = get_database_size(db_name)
+		reply['status'] = {"size" => result}
+	    end
+
+	    action "get_tables" do
+		Log.debug "Executing get_tables Action"
+		db_name = request[:dbname]
+		tables = get_tables(db_name)
+		reply['status'] = {"tables" => tables}                 
+	    end 
+
+	    def get_tables(database)
+		query = "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' and table_schema != 'pg_catalog' and table_schema != 'information_schema';"
+		result = execute_query(query, database)		
+	        result
+	    end
+
+	    def get_database_size(db_name)
+		query = "SELECT pg_size_pretty(pg_database_size('#{db_name}')) as database_size"
+		result = execute_query(query)
+		if not result.nil?
+		   result = result.strip
+		   result = result.gsub('\n', '')
+		end
+                result
+	    end
+
+	    def get_databases 
 	    	query = "SELECT pg_database.datname as \\\"Database\\\",pg_user.usename as \\\"Owner\\\"FROM pg_database, pg_user WHERE pg_database.datdba = pg_user.usesysid UNION SELECT pg_database.datname as \\\"Database\\\", NULL as \\\"Owner\\\"FROM pg_database WHERE pg_database.datdba NOT IN (SELECT usesysid FROM pg_user) ORDER BY \\\"Database\\\""
-                cmd = "psql -U #{db_user} -tc \"#{query}\""
-                Log.debug "Command RUN: #{cmd}"
-                result = %x[#{cmd}]
-                databaselist  = Array.new
+                result = execute_query(query)
+		databaselist  = Array.new
 		if not result.nil? and not result.empty?
                   result.each {|row|
                         content = row.split('|')
@@ -81,6 +105,20 @@ module MCollective
                 end
 		databaselist
 	    end
+
+            def execute_query(query, database=nil)
+		conffile = '/etc/kermit/kermit.cfg'
+                section = 'postgresql'
+
+                db_user = getkey(conffile, section, 'dbuser')
+		cmd = "psql -U #{db_user} -tc \"#{query}\""
+	        if not database.nil?
+		   cmd = "psql -U #{db_user} #{database} -tc \"#{query}\""
+		end
+                Log.debug "Command RUN: #{cmd}"
+                result = %x[#{cmd}]
+		result
+            end
 
             def getkey(conffile, section, key)
   		ini=IniFile.load(conffile, :comment => '#')
