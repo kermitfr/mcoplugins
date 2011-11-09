@@ -32,6 +32,7 @@ module MCollective
                section = 'postgresql'
 
                baseurl = getkey(conffile, section, 'sqlrepo')
+	       db_user = getkey(conffile, section, 'dbuser')
                Log.debug "Contacting repository using URL #{baseurl} to request #{request[:sqlfile]}"
                fileout = download(baseurl, request[:sqlfile], '/tmp')
 
@@ -40,7 +41,8 @@ module MCollective
                        reply.fail! "Error - Unable to get #{request[:sqlfile]} "
                end
 
-               cmd = "su - postgres -c 'psql < #{fileout}'"
+               cmd = "psql -U #{db_user} < #{fileout}"
+	       Log.debug "Executing command #{cmd}"
                result = %x[#{cmd}]
                reply['status'] = result
 
