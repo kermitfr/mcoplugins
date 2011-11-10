@@ -14,6 +14,8 @@
 
 require 'curb'
 require 'inifile'
+require 'socket'
+require 'json'
 
 module MCollective
     module Agent
@@ -27,78 +29,82 @@ module MCollective
                         :timeout     => 120
 
         action "execute_sql" do
-               Log.debug "Executing execute_sql Action"
-               conffile = '/etc/kermit/kermit.cfg'
-               section = 'postgresql'
+            Log.debug "Executing execute_sql Action"
+            conffile = '/etc/kermit/kermit.cfg'
+            section = 'postgresql'
 
-               baseurl = getkey(conffile, section, 'sqlrepo')
-               db_user = getkey(conffile, section, 'dbuser')
-               logmsg  = "Contacting repository using URL #{baseurl}"
-               logmsg << " to request #{request[:sqlfile]}"
-               Log.debug logmsg 
-               fileout = download(baseurl, request[:sqlfile], '/tmp')
+            baseurl = getkey(conffile, section, 'sqlrepo')
+            db_user = getkey(conffile, section, 'dbuser')
+            logmsg  = "Contacting repository using URL #{baseurl}"
+            logmsg << " to request #{request[:sqlfile]}"
+            Log.debug logmsg 
+            fileout = download(baseurl, request[:sqlfile], '/tmp')
 
-               unless File.exists?(fileout)
-                   reply['status'] = "Error - Unable to get #{request[:sqlfile]}"
-                   reply.fail! "Error - Unable to get #{request[:sqlfile]} "
-               end
+            unless File.exists?(fileout)
+                reply['status'] = "Error - Unable to get #{request[:sqlfile]}"
+                reply.fail! "Error - Unable to get #{request[:sqlfile]} "
+            end
 
-               cmd = "psql -U #{db_user} < #{fileout}"
-               Log.debug "Executing command #{cmd}"
-               result = %x[#{cmd}]
-               file_name = "/tmp/sql.log.#{Time.now.to_i}"
-               Log.debug "Creating log file #{file_name}"
-	           File.open(file_name, 'w') {|f| f.write(result) }
-               reply['logfile'] =file_name
+            cmd = "psql -U #{db_user} < #{fileout}"
+            Log.debug "Executing command #{cmd}"
+            result = %x[#{cmd}]
+            file_name = "/tmp/sql.log.#{Time.now.to_i}"
+            Log.debug "Creating log file #{file_name}"
+	        File.open(file_name, 'w') {|f| f.write(result) }
+            reply['logfile'] =file_name
 
+        end
+
+        action "inventory" do
+            reply['result'] = inventory
         end
 
         action "get_databases" do
-                Log.debug "Executing get_databases Action"
-                databaselist = get_databases
-                reply['databases'] = databaselist
+            Log.debug "Executing get_databases Action"
+            databaselist = get_databases
+            reply['databases'] = databaselist
         end
 
         action "get_database_size" do
-                Log.debug "Executing get_databases Action"
-                db_name = request[:dbname]
-                result = get_database_size(db_name)
-                reply['size'] = result
+            Log.debug "Executing get_databases Action"
+            db_name = request[:dbname]
+            result = get_database_size(db_name)
+            reply['size'] = result
         end
 
         action "get_tables" do
-                Log.debug "Executing get_tables Action"
-                db_name = request[:dbname]
-                tables = get_tables(db_name)
-                reply['tables'] = tables
+            Log.debug "Executing get_tables Action"
+            db_name = request[:dbname]
+            tables = get_tables(db_name)
+            reply['tables'] = tables
         end 
 
         private
 
         def get_tables(database)
-                query = "SELECT table_name FROM information_schema.tables"
-                query << " WHERE table_type = 'BASE TABLE'"
-                query << " and table_schema != 'pg_catalog'"
-                query << " and table_schema != 'information_schema';"
-                result = execute_query(query, database)     
-                tablelist  = Array.new
-            	return tablelist unless result
-                result.each_line do |row|
-                     row.strip!
-                     tablelist << row unless row.empty?
-                end
-                tablelist
+            query = "SELECT table_name FROM information_schema.tables"
+            query << " WHERE table_type = 'BASE TABLE'"
+            query << " and table_schema != 'pg_catalog'"
+            query << " and table_schema != 'information_schema';"
+            result = execute_query(query, database)     
+            tablelist  = Array.new
+            return tablelist unless result
+            result.each_line do |row|
+                 row.strip!
+                 tablelist << row unless row.empty?
+            end
+            tablelist
         end
 
         def get_database_size(db_name)
-                query = "SELECT pg_size_pretty(pg_database_size('#{db_name}'))"
-                query << " as database_size"
-                result = execute_query(query)
-                if not result.nil?
-                   result = result.strip
-                   result = result.gsub('\n', '')
-                end
-                result
+            query = "SELECT pg_size_pretty(pg_database_size('#{db_name}'))"
+            query << " as database_size"
+            result = execute_query(query)
+            if not result.nil?
+               result = result.strip
+               result = result.gsub('\n', '')
+            end
+            result
         end
 
         def get_databases 
@@ -130,14 +136,14 @@ module MCollective
             conffile = '/etc/kermit/kermit.cfg'
             section = 'postgresql'
 
-           db_user = getkey(conffile, section, 'dbuser')
-           cmd = "psql -U #{db_user} -tc \"#{query}\""
-           if not database.nil?
+            db_user = getkey(conffile, section, 'dbuser')
+            cmd = "psql -U #{db_user} -tc \"#{query}\""
+            if not database.nil?
                cmd = "psql -U #{db_user} #{database} -tc \"#{query}\""
-           end
-           Log.debug "Command RUN: #{cmd}"
-           result = %x[#{cmd}]
-           result
+            end
+            Log.debug "Command RUN: #{cmd}"
+            result = %x[#{cmd}]
+            result
         end
 
         def getkey(conffile, section, key)
@@ -153,6 +159,41 @@ module MCollective
             Curl::Easy.download(url,filename=fileout)
             fileout
         end 
+
+        def inventory
+            inventory = Hash.new
+            databases = get_databases
+            inventory[:databases] = []
+            databases.each do |db|
+                tables = get_tables(db['name'])
+                db_size = get_database_size(db['name'])
+                database = {"name" => db['name'], "size" => db_size, "tables" => tables}
+                inventory[:databases] << database 
+            end
+            jsonfilename = send_inventory_file(inventory)
+            jsonfilename
+        end
+
+        def send_inventory_file(inventory)
+            hostname = Socket.gethostname
+
+            jsoncompactfname="/tmp/postregresqlinventory-#{hostname}-compact.json"
+            jsoncompactout = File.open(jsoncompactfname,'w')
+            jsoncompactout.write(JSON.generate(inventory))
+            jsoncompactout.close
+
+            jsonprettyfname="/tmp/postgresqlinventory-#{hostname}-pretty.json"
+            jsonprettyout = File.open(jsonprettyfname,'w')
+            jsonprettyout.write(JSON.pretty_generate(inventory))
+            jsonprettyout.close
+
+            cmd = "ruby /usr/local/bin/kermit/queue/send.rb #{jsoncompactfname}"
+
+            %x[#{cmd}]
+
+            jsoncompactfname
+        end
+
 
         end
     end

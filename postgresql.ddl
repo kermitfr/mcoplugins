@@ -44,6 +44,15 @@ action "get_databases", :description => "Get list of databases in the local Post
            :display_as  => "Databases"
 end
 
+action "inventory", :description => "Create inventory of local PostgreSQL DB" do
+    display :always
+
+    output :result,
+           :description => "Inventory File Name",
+           :display_as  => "Inventory"
+end
+
+
 action "get_database_size", :description => "Get Size of the Given Database" do
     display :always
 
