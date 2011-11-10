@@ -120,13 +120,13 @@ module MCollective
         end
 
         def get_databases 
-            query = 'SELECT pg_database.datname as "Database",pg_user.usename'
-            query << ' as "Owner" FROM pg_database, pg_user'
+            query = 'SELECT pg_database.datname as \"Database\",pg_user.usename'
+            query << ' as \"Owner\" FROM pg_database, pg_user'
             query << ' WHERE pg_database.datdba = pg_user.usesysid'
             query << ' UNION'
-            query << ' SELECT pg_database.datname as "Database", NULL as "Owner"'
+            query << ' SELECT pg_database.datname as \"Database\", NULL as "Owner"'
             query << ' FROM pg_database WHERE pg_database.datdba'
-            query << ' NOT IN (SELECT usesysid FROM pg_user) ORDER BY "Database"'
+            query << ' NOT IN (SELECT usesysid FROM pg_user) ORDER BY \"Database\"'
             result = execute_query(query)
             databaselist  = Array.new
 
