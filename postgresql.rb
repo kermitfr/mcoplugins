@@ -29,6 +29,7 @@ module MCollective
                         :timeout     => 120
 
         action "execute_sql" do
+            return nil unless check_pg
             Log.debug "Executing execute_sql Action"
             conffile = '/etc/kermit/kermit.cfg'
             section = 'postgresql'
@@ -56,16 +57,19 @@ module MCollective
         end
 
         action "inventory" do
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             reply['result'] = inventory
         end
 
         action "get_databases" do
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             Log.debug "Executing get_databases Action"
             databaselist = get_databases
             reply['databases'] = databaselist
         end
 
         action "get_database_size" do
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             Log.debug "Executing get_databases Action"
             db_name = request[:dbname]
             result = get_database_size(db_name)
@@ -73,6 +77,7 @@ module MCollective
         end
 
         action "get_tables" do
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             Log.debug "Executing get_tables Action"
             db_name = request[:dbname]
             tables = get_tables(db_name)
@@ -80,12 +85,14 @@ module MCollective
         end 
 
         action "get_data_dir" do
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             Log.debug "Executing get_data_dir Action"
             data_dir = get_data_dir
             reply['data_dir'] = data_dir
         end
 
         action "get_version" do
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             Log.debug "Executing get_version Action"
             version = get_version
             reply['version'] = version
@@ -154,6 +161,24 @@ module MCollective
             result
         end
 
+        def check_pg
+            conffile = '/etc/kermit/kermit.cfg'
+            section = 'postgresql'
+
+            db_user = getkey(conffile, section, 'dbuser')
+            db_password = getkey(conffile, section, 'dbpassword')
+            query = 'select version();'
+            cmd = ""
+            if db_password
+                cmd << "export PGPASSWORD=\"#{db_password}\";"
+            end
+ 
+            cmd << "psql -U #{db_user} -tc \"#{query}\""
+            Log.debug "Check Postgres Command: #{cmd}"
+            %x[#{cmd}]
+            return $? == 0
+        end
+
         def get_version
             query = 'select version();'
             result = execute_query(query)
@@ -190,34 +215,39 @@ module MCollective
 
         def inventory
             inventory = Hash.new
-            databases = get_databases
+
             inventory[:databases] = []
-            inventory[:data_dir] = get_data_dir
             inventory[:version] = get_version
+            
+            inventory[:data_dir] = get_data_dir
             inventory[:users] = get_users
+            databases = get_databases
             databases.each do |db|
                 tables = get_tables(db['name'])
                 db_size = get_database_size(db['name'])
                 database = {"name" => db['name'], "size" => db_size, "tables" => tables}
                 inventory[:databases] << database 
             end
-            jsonfilename = send_inventory_file(inventory)
+            jsonfilename = send_inventory(dump_inventory('postgresql', inventory))
             jsonfilename
         end
 
-        def send_inventory_file(inventory)
+        def dump_inventory(dump_name, inventory)
             hostname = Socket.gethostname
 
-            jsoncompactfname="/tmp/postgresqlinventory-#{hostname}-compact.json"
+            jsoncompactfname="/tmp/#{dump_name}inventory-#{hostname}-compact.json"
             jsoncompactout = File.open(jsoncompactfname,'w')
             jsoncompactout.write(JSON.generate(inventory))
             jsoncompactout.close
 
-            jsonprettyfname="/tmp/postgresqlinventory-#{hostname}-pretty.json"
+            jsonprettyfname="/tmp/#{dump_name}inventory-#{hostname}-pretty.json"
             jsonprettyout = File.open(jsonprettyfname,'w')
             jsonprettyout.write(JSON.pretty_generate(inventory))
             jsonprettyout.close
+            jsoncompactfname 
+        end
 
+        def send_inventory(jsoncompactfname)
             cmd = "ruby /usr/local/bin/kermit/queue/send.rb #{jsoncompactfname}"
 
             %x[#{cmd}]
@@ -230,11 +260,18 @@ module MCollective
             section = 'postgresql'
 
             db_user = getkey(conffile, section, 'dbuser')
-            cmd = "psql -U #{db_user} -tc \"#{query}\""
-            if not database.nil?
-               cmd = "psql -U #{db_user} #{database} -tc \"#{query}\""
+            db_password = getkey(conffile, section, 'dbpassword')
+            cmd = ""
+            if db_password
+                cmd << "export PGPASSWORD=\"#{db_password}\";"
             end
+            cmd << "psql -U #{db_user} -tc \"#{query}\""
+            if not database.nil?
+               cmd << "psql -U #{db_user} #{database} -tc \"#{query}\""
+            end
+
             Log.debug "Command RUN: #{cmd}"
+
             result = %x[#{cmd}]
             result
         end
