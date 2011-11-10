@@ -177,7 +177,7 @@ module MCollective
         def send_inventory_file(inventory)
             hostname = Socket.gethostname
 
-            jsoncompactfname="/tmp/postregresqlinventory-#{hostname}-compact.json"
+            jsoncompactfname="/tmp/postgresqlinventory-#{hostname}-compact.json"
             jsoncompactout = File.open(jsoncompactfname,'w')
             jsoncompactout.write(JSON.generate(inventory))
             jsoncompactout.close
