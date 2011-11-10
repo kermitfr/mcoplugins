@@ -31,7 +31,7 @@ action "execute_sql", :description => "Execute a SQL file on local PostgreSQL da
           :optional    => false,
           :maxlength   => 40
 
-    output :status,
+    output :logfile,
            :description => "The status of the script execution",
            :display_as  => "Execution Log"
 end

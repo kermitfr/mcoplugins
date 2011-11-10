@@ -26,7 +26,7 @@ module MCollective
                         :url         => "http://www.kermit.fr",
                         :timeout     => 120
 
-            action "execute_sql" do
+        action "execute_sql" do
                Log.debug "Executing execute_sql Action"
                conffile = '/etc/kermit/kermit.cfg'
                section = 'postgresql'
@@ -46,28 +46,31 @@ module MCollective
                cmd = "psql -U #{db_user} < #{fileout}"
                Log.debug "Executing command #{cmd}"
                result = %x[#{cmd}]
-               reply['status'] = result
+               file_name = "/tmp/sql.log.#{Time.now.to_i}"
+               Log.debug "Creating log file #{file_name}"
+	           File.open(file_name, 'w') {|f| f.write(result) }
+               reply['logfile'] =file_name
 
         end
 
         action "get_databases" do
                 Log.debug "Executing get_databases Action"
                 databaselist = get_databases
-                reply['status'] = {"databases" => databaselist}
+                reply['databases'] = databaselist
         end
 
         action "get_database_size" do
                 Log.debug "Executing get_databases Action"
                 db_name = request[:dbname]
                 result = get_database_size(db_name)
-                reply['status'] = {"size" => result}
+                reply['size'] = result
         end
 
         action "get_tables" do
                 Log.debug "Executing get_tables Action"
                 db_name = request[:dbname]
                 tables = get_tables(db_name)
-                reply['status'] = {"tables" => tables}
+                reply['tables'] = tables
         end 
 
         private
