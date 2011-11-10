@@ -26,16 +26,15 @@ module MCollective
                         :license     => "GPLv3",
                         :version     => "1.0",
                         :url         => "http://www.kermit.fr",
-                        :timeout     => 120
+                        :timeout     => 10
 
         action "execute_sql" do
-            return nil unless check_pg
+            reply.fail! "Error - No pgsql server found or started" unless check_pg
             Log.debug "Executing execute_sql Action"
             conffile = '/etc/kermit/kermit.cfg'
             section = 'postgresql'
 
             baseurl = getkey(conffile, section, 'sqlrepo')
-            db_user = getkey(conffile, section, 'dbuser')
             logmsg  = "Contacting repository using URL #{baseurl}"
             logmsg << " to request #{request[:sqlfile]}"
             Log.debug logmsg 
@@ -45,8 +44,14 @@ module MCollective
                 reply['status'] = "Error - Unable to get #{request[:sqlfile]}"
                 reply.fail! "Error - Unable to get #{request[:sqlfile]} "
             end
+            db_user = getkey(conffile, section, 'dbuser')
+            db_password = getkey(conffile, section, 'dbpassword')
+            cmd = ""
+            if db_password
+                cmd << "export PGPASSWORD=\"#{db_password}\";"
+            end
 
-            cmd = "psql -U #{db_user} < #{fileout}"
+            cmd << "psql -U #{db_user} < #{fileout}"
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
             file_name = "/tmp/sql.log.#{Time.now.to_i}"
