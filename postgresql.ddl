@@ -52,6 +52,21 @@ action "inventory", :description => "Create inventory of local PostgreSQL DB" do
            :display_as  => "Inventory"
 end
 
+action "get_data_dir", :description => "Getting Data Directory" do
+    display :always
+
+    output :data_dir,
+           :description => "Data Directory",
+           :display_as  => "Data Directory"
+end
+
+action "get_version", :description => "Getting PostgreSQL Version" do
+    display :always
+
+    output :version,
+           :description => "PostgreSQL Version",
+           :display_as  => "Version"
+end
 
 action "get_database_size", :description => "Get Size of the Given Database" do
     display :always

@@ -79,6 +79,18 @@ module MCollective
             reply['tables'] = tables
         end 
 
+        action "get_data_dir" do
+            Log.debug "Executing get_data_dir Action"
+            data_dir = get_data_dir
+            reply['data_dir'] = data_dir
+        end
+
+        action "get_version" do
+            Log.debug "Executing get_version Action"
+            version = get_version
+            reply['version'] = version
+        end
+
         private
 
         def get_tables(database)
@@ -132,38 +144,57 @@ module MCollective
             databaselist
         end
 
-        def execute_query(query, database=nil)
-            conffile = '/etc/kermit/kermit.cfg'
-            section = 'postgresql'
-
-            db_user = getkey(conffile, section, 'dbuser')
-            cmd = "psql -U #{db_user} -tc \"#{query}\""
-            if not database.nil?
-               cmd = "psql -U #{db_user} #{database} -tc \"#{query}\""
+        def get_data_dir
+            query = 'SHOW data_directory;'
+            result = execute_query(query)
+            if not result.nil?
+               result = result.strip
+               result = result.gsub('\n', '')
             end
-            Log.debug "Command RUN: #{cmd}"
-            result = %x[#{cmd}]
             result
         end
 
-        def getkey(conffile, section, key)
-            ini=IniFile.load(conffile, :comment => '#')
-            params = ini[section]
-            params[key]
+        def get_version
+            query = 'select version();'
+            result = execute_query(query)
+            if not result.nil?
+               result = result.strip
+               result = result.gsub('\n', '')
+            end
+            result 
         end
 
-        # Download a file with Curl
-        def download(repourl, file, targetfolder)
-            url="#{repourl}/#{file}".gsub(/([^:])\/\//, '\1/')
-            fileout = "#{targetfolder}/#{file}".gsub(/([^:])\/\//, '\1/')
-            Curl::Easy.download(url,filename=fileout)
-            fileout
-        end 
+        def get_users
+            query = 'SELECT u.usename AS \"User name\",  u.usesysid AS \"User ID\",  '
+            query << 'CASE WHEN u.usesuper AND u.usecreatedb THEN CAST(\'superuser, create database\' AS pg_catalog.text)'
+            query << ' WHEN u.usesuper THEN CAST(\'superuser\' AS pg_catalog.text) WHEN u.usecreatedb '
+            query << 'THEN CAST(\'create database\' AS pg_catalog.text) ELSE CAST(\'\' AS pg_catalog.text) '
+            query << 'END AS \"Attributes\" FROM pg_catalog.pg_user u ORDER BY 1; '
+            result = execute_query(query)
+            userlist  = Array.new
+
+            return userlist unless result
+
+            result.each_line do |row|
+                content = row.split('|')
+                if content.length == 3
+                    uname = content[0].strip
+                    uid = content[1].strip
+                    attributes = content[2].strip
+                    data = { "username" => uname, "uid" => uid, "attributes" => attributes }
+                    userlist << data
+                end
+            end
+            userlist
+        end
 
         def inventory
             inventory = Hash.new
             databases = get_databases
             inventory[:databases] = []
+            inventory[:data_dir] = get_data_dir
+            inventory[:version] = get_version
+            inventory[:users] = get_users
             databases.each do |db|
                 tables = get_tables(db['name'])
                 db_size = get_database_size(db['name'])
@@ -193,7 +224,34 @@ module MCollective
 
             jsoncompactfname
         end
+        
+        def execute_query(query, database=nil)
+            conffile = '/etc/kermit/kermit.cfg'
+            section = 'postgresql'
 
+            db_user = getkey(conffile, section, 'dbuser')
+            cmd = "psql -U #{db_user} -tc \"#{query}\""
+            if not database.nil?
+               cmd = "psql -U #{db_user} #{database} -tc \"#{query}\""
+            end
+            Log.debug "Command RUN: #{cmd}"
+            result = %x[#{cmd}]
+            result
+        end
+
+        def getkey(conffile, section, key)
+            ini=IniFile.load(conffile, :comment => '#')
+            params = ini[section]
+            params[key]
+        end
+
+        # Download a file with Curl
+        def download(repourl, file, targetfolder)
+            url="#{repourl}/#{file}".gsub(/([^:])\/\//, '\1/')
+            fileout = "#{targetfolder}/#{file}".gsub(/([^:])\/\//, '\1/')
+            Curl::Easy.download(url,filename=fileout)
+            fileout
+        end
 
         end
     end
