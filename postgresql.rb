@@ -78,7 +78,13 @@ module MCollective
                 query << " and table_schema != 'pg_catalog'"
                 query << " and table_schema != 'information_schema';"
                 result = execute_query(query, database)     
-                result
+                tablelist  = Array.new
+            	return tablelist unless result
+                result.each_line do |row|
+                     row.strip!
+                     tablelist << row unless row.empty?
+                end
+                tablelist
         end
 
         def get_database_size(db_name)
@@ -107,7 +113,7 @@ module MCollective
             
             result.each_line do |row|
                 content = row.split('|')
-                if content.length = 2
+                if content.length == 2
                     dbname = content[0].strip
                     owner = content[1].strip
                     data = { "name" => dbname, "owner" => owner }
