@@ -56,7 +56,7 @@ module MCollective
             result = %x[#{cmd}]
             file_name = "/tmp/sql.log.#{Time.now.to_i}"
             Log.debug "Creating log file #{file_name}"
-	        File.open(file_name, 'w') {|f| f.write(result) }
+            File.open(file_name, 'w') {|f| f.write(result) }
             reply['logfile'] =file_name
 
         end
