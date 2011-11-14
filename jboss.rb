@@ -18,6 +18,7 @@ require 'json'
 require 'socket'
 require 'curb'
 require 'inifile'
+require "ftools"
 
 module MCollective
     module Agent
@@ -96,6 +97,28 @@ module MCollective
 
                 result[:status] = "#{deployfolder}#{appfile}"
                 reply.data = result
+            end
+
+            action "get_log" do
+                result = {:server_log => ""}
+
+                validate :instancename, String
+
+                instancename = request[:instancename]
+
+                jbosshome = guess_jboss_home1(run_cmd)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+
+                logfile="#{jbosshome}/server/#{instancename}/log/server.log"
+                reply.fail! "Error - Unable to find #{logfile}" \
+                            unless File.exists? logfile
+
+                file_name = "server.log.#{Time.now.to_i}"
+                Log.debug "Copying log file #{file_name}"
+                File.copy(logfile, "/tmp/#{file_name}")
+                send_log("/tmp/#{file_name}")
+                reply['logfile'] = file_name            
             end
 
             private
@@ -324,6 +347,14 @@ module MCollective
                 %x[#{cmd}]
                 
                 reply.data = { :result => jsoncompactfname }
+            end
+
+            def send_log(logfile)
+                cmd = "ruby /usr/local/bin/kermit/queue/sendlog.rb #{logfile}"
+
+                %x[#{cmd}]
+
+                logfile
             end
         end
     end

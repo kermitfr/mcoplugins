@@ -106,3 +106,19 @@ action "undeploy", :description => "Undeploy an application in JBoss" do
            :description => "The status of the deployment",
            :display_as  => "Undeployed file"
 end
+
+action "get_log", :description => "Get JBoss instance log file" do
+    display :always
+
+    input :instancename,
+          :prompt      => "Instance name",
+          :description => "Target instance for deploy",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    output :logfile,
+           :description => "Server LogFile",
+           :display_as  => "Log file"
+end
