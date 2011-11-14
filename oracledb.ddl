@@ -31,14 +31,6 @@ action "execute_sql", :description => "Execute a SQL file on local PostgreSQL da
           :optional    => false,
           :maxlength   => 40
 
-    input :dbname,
-          :prompt      => "Database name",
-          :description => "Name of the database where you want to execute script",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => true,
-          :maxlength   => 40
-
     output :logfile,
            :description => "The status of the script execution",
            :display_as  => "Execution Log"
@@ -74,14 +66,6 @@ action "get_version", :description => "Getting PostgreSQL Version" do
     output :version,
            :description => "PostgreSQL Version",
            :display_as  => "Version"
-end
-
-action "sql_list", :description => "Get list of executable SQLs" do
-    display :always
-
-    output :sqllist,
-           :description => "List of executable SQLs scripts",
-           :display_as  => "SQL List"
 end
 
 action "get_database_size", :description => "Get Size of the Given Database" do

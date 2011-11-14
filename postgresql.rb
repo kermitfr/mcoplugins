@@ -50,14 +50,21 @@ module MCollective
             if db_password
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
             end
-
-            cmd << "psql -U #{db_user} < #{fileout}"
+            if request[:dbname].nil?
+                Log.debug "Executing SQL script without DBName specfied. Need to be present in SQL file"
+                cmd << "psql -U #{db_user} < #{fileout}"
+            else
+                db_name = request[:dbname]
+                Log.debug "Executing SQL script with provided DBName: #{db_name}"
+                cmd << "psql -U #{db_user} #{db_name} < #{fileout}"
+            end
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
-            file_name = "/tmp/sql.log.#{Time.now.to_i}"
+            file_name = "sql.log.#{Time.now.to_i}"
             Log.debug "Creating log file #{file_name}"
-	        File.open(file_name, 'w') {|f| f.write(result) }
-            reply['logfile'] =file_name
+	        File.open("/tmp/#{file_name}", 'w') {|f| f.write(result) }
+            send_log("/tmp/#{file_name}")
+            reply['logfile'] = file_name
 
         end
 
@@ -101,6 +108,21 @@ module MCollective
             Log.debug "Executing get_version Action"
             version = get_version
             reply['version'] = version
+        end
+
+        action "sql_list" do
+            filetype = 'sql'
+            result = { :sqllist => [] }
+            SECTION = 'postgresql'
+            MAINCONF = '/etc/kermit/kermit.cfg'
+            ini=IniFile.load(MAINCONF, :comment => '#')
+            params = ini[SECTION]
+            repourl = params['sqlrepo']
+            c =  Curl::Easy.perform(repourl)
+            pattern = /<a.*?href="(.*#{filetype}?)"/
+            m=c.body_str.scan(pattern)
+            result[:sqllist] = m.map{ |item| item.first }
+            reply.data = result
         end
 
         private
@@ -250,6 +272,14 @@ module MCollective
             jsonprettyout.write(JSON.pretty_generate(inventory))
             jsonprettyout.close
             jsoncompactfname 
+        end
+
+        def send_log(logfile)
+            cmd = "ruby /usr/local/bin/kermit/queue/sendlog.rb #{logfile}"
+
+            %x[#{cmd}]
+
+            logfile
         end
 
         def send_inventory(jsoncompactfname)
