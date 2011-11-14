@@ -115,8 +115,15 @@ module MCollective
                             unless File.exists? logfile
 
                 file_name = "server.log.#{Time.now.to_i}"
-                Log.debug "Copying log file #{file_name}"
-                File.copy(logfile, "/tmp/#{file_name}")
+
+                #Log.debug "Copying log file #{file_name}"
+                #File.copy(logfile, "/tmp/#{file_name}")
+
+                cmd="tail -n 1000 #{logfile}"
+                result=%x[#{cmd}]
+
+                File.open("/tmp/#{file_name}", 'w') {|f| f.write(result) }
+
                 send_log("/tmp/#{file_name}")
                 reply['logfile'] = file_name            
             end
