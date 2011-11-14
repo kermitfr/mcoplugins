@@ -49,11 +49,11 @@ module MCollective
             cmd = "su oracle -c \"sqlplus #{db_user}/#{db_password} @#{fileout}\""
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
-            file_name = "/tmp/sql.log.#{Time.now.to_i}"
+            file_name = "oracle.sql.log.#{Time.now.to_i}"
             Log.debug "Creating log file #{file_name}"
-	        File.open(file_name, 'w') {|f| f.write(result) }
-            reply['logfile'] =file_name
-
+            File.open("/tmp/#{file_name}", 'w') {|f| f.write(result) }
+            send_log("/tmp/#{file_name}")
+            reply['logfile'] = file_name
         end
 
         action "inventory" do
@@ -85,7 +85,7 @@ module MCollective
             instances.each do |instance|
                 result = execute_query(generate_query_file(query))     
             end
-            jsonfilename = send_inventory(dump_inventory('postgresql', inventory))
+            jsonfilename = send_inventory(dump_inventory('oracledb', inventory))
             jsonfilename
         end
 
@@ -117,6 +117,14 @@ module MCollective
             the_file.close
             file_name 
             end 
+        end
+
+        def send_log(logfile)
+            cmd = "ruby /usr/local/bin/kermit/queue/sendlog.rb #{logfile}"
+
+            %x[#{cmd}]
+
+            logfile
         end
 
         def send_inventory(jsoncompactfname)
