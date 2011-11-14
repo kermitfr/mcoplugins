@@ -65,7 +65,6 @@ module MCollective
 	        File.open("/tmp/#{file_name}", 'w') {|f| f.write(result) }
             send_log("/tmp/#{file_name}")
             reply['logfile'] = file_name
-
         end
 
         action "inventory" do
