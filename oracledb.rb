@@ -16,6 +16,7 @@ require 'curb'
 require 'inifile'
 require 'socket'
 require 'json'
+require 'base64'
 
 module MCollective
     module Agent
@@ -44,8 +45,8 @@ module MCollective
                 reply['status'] = "Error - Unable to get #{request[:sqlfile]}"
                 reply.fail! "Error - Unable to get #{request[:sqlfile]} "
             end
-            db_user = getkey(conffile, section, 'dbuser')
-            db_password = getkey(conffile, section, 'dbpassword')
+            db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
+            db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
             cmd = "su oracle -c \"sqlplus #{db_user}/#{db_password} @#{fileout}\""
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
@@ -67,7 +68,7 @@ module MCollective
             conffile = '/etc/kermit/kermit.cfg'
             section = 'oracledb'
 
-            oracle_sys_user = getkey(conffile, section, 'oracle_sys_user')
+            oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
             cmd = "su #{oracle_sys_user} -c \"echo 'select sysdate from dual;' | sqlplus / as sysdba\""
             Log.debug "Check Oracle Command: #{cmd}"
             %x[#{cmd}]
@@ -157,7 +158,7 @@ module MCollective
             conffile = '/etc/kermit/kermit.cfg'
             section = 'oracledb'
 
-            oracle_sys_user = getkey(conffile, section, 'oracle_sys_user')
+            oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
             cmd = "su #{oracle_sys_user} -c \"sqlplus / as sysdba @#{sql_file_name}\""
 
             Log.debug "Command RUN: #{cmd}"

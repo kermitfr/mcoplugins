@@ -16,6 +16,7 @@ require 'curb'
 require 'inifile'
 require 'socket'
 require 'json'
+require 'base64'
 
 module MCollective
     module Agent
@@ -44,8 +45,8 @@ module MCollective
                 reply['status'] = "Error - Unable to get #{request[:sqlfile]}"
                 reply.fail! "Error - Unable to get #{request[:sqlfile]} "
             end
-            db_user = getkey(conffile, section, 'dbuser')
-            db_password = getkey(conffile, section, 'dbpassword')
+            db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
+            db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
             cmd = ""
             if db_password
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
@@ -191,8 +192,8 @@ module MCollective
             conffile = '/etc/kermit/kermit.cfg'
             section = 'postgresql'
 
-            db_user = getkey(conffile, section, 'dbuser')
-            db_password = getkey(conffile, section, 'dbpassword')
+            db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
+            db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
             query = 'select version();'
             cmd = ""
             if db_password
@@ -293,8 +294,8 @@ module MCollective
             conffile = '/etc/kermit/kermit.cfg'
             section = 'postgresql'
 
-            db_user = getkey(conffile, section, 'dbuser')
-            db_password = getkey(conffile, section, 'dbpassword')
+            db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
+            db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
             cmd = ""
             if db_password
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
