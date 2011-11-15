@@ -33,6 +33,8 @@ module MCollective
 
             # JBoss inventory
             action "inventory" do
+                jbosshome = guess_jboss_home1(run_cmd)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" unless jbosshome
                 inventory        
             end
 
@@ -232,7 +234,19 @@ module MCollective
                     dstypes.each do |type|
                        if data[type]
                            data[type].each do |ds|
-                               dslist << ds["jndi-name"][0] if ds["jndi-name"][0]
+                               dsinfo = {"jndi_name" => ds["jndi-name"] ? ds["jndi-name"][0] : "",
+                                         "connection_url" => ds["connection-url"] ? ds["connection-url"][0] : "",
+                                         "driver_class" => ds["driver-class"] ? ds["driver-class"][0] : "",
+                                         "username" => ds["user-name"] ? ds["user-name"][0] : "",
+                                         "min_pool_size" => ds["min-pool-size"] ? ds["min-pool-size"][0] : "",
+                                         "max_pool_size" => ds["max-pool-size"] ? ds["max-pool-size"][0] : "",
+                                         "idle_timeout_minutes" => ds["idle-timeout-minutes"] ? ds["idle-timeout-minutes"][0] : "",
+                                         "new_connection_sql" => ds["new-connection-sql"] ? ds["new-connection-sql"][0] : "",
+                                         "check_valid_connection_sql" => ds["check-valid-connection-sql"] ? ds ["check-valid-connection-sql"][0] : "",
+                                         "valid_connection_checker_class_name" => ds["valid-connection-checker-class-name"] ? ds["valid-connection-checker-class-name"][0] : "",
+                                         "security_domain" => ds["security-domain"] ? ds["security-domain"][0] : "",
+                                         "prepared_statement_cache_size" => ds["prepared-statement-cache-size"] ? ds["prepared-statement-cache-size"][0] : "" }
+                               dslist << dsinfo
                            end
                        end
                     end
@@ -244,8 +258,12 @@ module MCollective
             def app_list(folder, archivetypes)
                 applist = Array.new    
                 archivetypes.each do |atype|
-                    Dir.glob("#{folder}deploy/**/*.#{atype}").each do|f| 
-                        applist << File.basename(f)
+                    Dir.glob("#{folder}deploy/**/*.#{atype}", File::FNM_CASEFOLD).each do|f| 
+                        appinfo = {"name" => File.basename(f),
+                                   "exploded" => File.directory?(f),
+                                   "size" => File.size?(f), 
+                                   "time" => File::ctime(f)}
+                        applist << appinfo
                     end
                 end
                 applist
