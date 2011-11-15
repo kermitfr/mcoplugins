@@ -3,9 +3,9 @@ require 'base64'
 require 'optparse'
 
 # This hash will hold all of the options
- # parsed from the command-line by
- # OptionParser.
- options = {}
+# parsed from the command-line by
+# OptionParser.
+options = {}
 optparse = OptionParser.new do|opts|
     # Set a banner, displayed at the top
     # of the help screen.
@@ -25,15 +25,15 @@ optparse = OptionParser.new do|opts|
     end
 end
  
- # Parse the command-line. Remember there are two forms
- # of the parse method. The 'parse' method simply parses
- # ARGV, while the 'parse!' method parses ARGV and removes
- # any options found there, as well as any parameters for
- # the options. What's left is the list of files to resize.
- optparse.parse!
+# Parse the command-line. Remember there are two forms
+# of the parse method. The 'parse' method simply parses
+# ARGV, while the 'parse!' method parses ARGV and removes
+# any options found there, as well as any parameters for
+# the options. What's left is the list of files to resize.
+optparse.parse!
  
- puts "Being verbose" if options[:verbose]
- 
- ARGV.each do|s|
-    puts s + ": " + Base64.encode64(s)
- end
+puts "Being verbose" if options[:verbose]
+
+ARGV.each do|s|
+   puts s + ": " + Base64.encode64(s)
+end
