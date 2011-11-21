@@ -122,3 +122,45 @@ action "get_log", :description => "Get JBoss instance log file" do
            :description => "Server LogFile",
            :display_as  => "Log file"
 end
+
+action "get_app_backups", :description => "Get backups file list for provided
+application" do
+    display :always
+
+    input :appname,
+          :prompt      => "Application name",
+          :description => "Name of application",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    output :backups,
+           :description => "List of application backups",
+           :display_as  => "App Backups"
+end
+
+action "rollback", :description => "Rollback a deployed application" do
+    display :always
+
+    input :backupfile,
+          :prompt      => "Backup file name",
+          :description => "Name of the backup file to use for rollback",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    input :instancename,
+          :prompt      => "Instance name",
+          :description => "Target instance for deploy",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    output :logfile,
+           :description => "Server LogFile",
+           :display_as  => "Log file"
+end
+

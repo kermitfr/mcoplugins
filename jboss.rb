@@ -19,6 +19,7 @@ require 'socket'
 require 'curb'
 require 'inifile'
 require "ftools"
+require 'fileutils'
 
 module MCollective
     module Agent
@@ -73,7 +74,7 @@ module MCollective
                 deployfolder="#{jbosshome}/server/#{instancename}/deploy/"
                 reply.fail! "Error - Unable to find #{deployfolder}" \
                             unless File.directory? deployfolder
-
+                create_backup(appfile, deployfolder)
                 result[:status] = download(repourl, appfile, deployfolder)
                 reply.data = result
             end
@@ -118,9 +119,6 @@ module MCollective
 
                 file_name = "server.log.#{Time.now.to_i}"
 
-                #Log.debug "Copying log file #{file_name}"
-                #File.copy(logfile, "/tmp/#{file_name}")
-
                 cmd="tail -n 1000 #{logfile}"
                 result=%x[#{cmd}]
 
@@ -128,6 +126,33 @@ module MCollective
 
                 send_log("/tmp/#{file_name}")
                 reply['logfile'] = file_name            
+            end
+
+            action "get_app_backups" do
+                validate :appname, String
+
+                appname = request[:appname]
+                reply['backups'] = get_app_backups(appname)
+            end
+
+            action "rollback" do
+                result = {:status => ""}
+
+                validate :backupfile, String
+                validate :instancename, String
+
+                backupfile = request[:backupfile]
+                instancename = request[:instancename]
+
+                jbosshome = guess_jboss_home1(run_cmd)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+
+                deployfolder="#{jbosshome}/server/#{instancename}/deploy/"
+                reply.fail! "Error - Unable to find #{deployfolder}" \
+                            unless File.directory? deployfolder    
+                result[:status] = rollback(backupfile, deployfolder)
+                reply.data = result
             end
 
             private
@@ -381,6 +406,66 @@ module MCollective
 
                 logfile
             end
+
+            def getkey(conffile, section, key)
+                ini=IniFile.load(conffile, :comment => '#')
+                params = ini[section]
+                params[key]
+            end
+
+            def create_backup(appname, deployfolder)
+                conffile = '/etc/kermit/kermit.cfg'
+                section = 'jbossas' 
+                source_file = "#{deployfolder}/#{appname}"
+                if not File.exists?(source_file)
+                    Log.debug "Backup file for #{appname} not created. App does not exists in deploy folder"
+                    return false
+                end
+                backup_folder = getkey(conffile, section, 'backupdir')
+                FileUtils.mkdir_p(backup_folder) unless File.directory? backup_folder
+                dest_file = "#{backup_folder}/#{appname}.#{Time.now.to_i}"
+                FileUtils.cp source_file, dest_file
+                return true
+            end
+
+            def rollback(backupfile, deployfolder)
+                conffile = '/etc/kermit/kermit.cfg'
+                section = 'jbossas'
+                backup_folder = getkey(conffile, section, 'backupdir')
+                source_file = "#{backup_folder}/#{backupfile}"
+                if not File.exists?(source_file)
+                    return "Backup file #{backupfile} does not exist. Cannot Rollback"
+                end
+                y = backupfile.split(/\./)
+                y.delete(y.last())
+                appname = nil
+                y.each do |p|
+                    if not appname.nil?
+                        appname = "#{appname}.#{p}"
+                    else
+                        appname = p
+                    end
+                end
+                dest_file = "#{deployfolder}/#{appname}"
+                FileUtils.cp source_file, dest_file
+                return "Rollback completed"
+            end
+
+            def get_app_backups(appname) 
+                conffile = '/etc/kermit/kermit.cfg'
+                section = 'jbossas'
+                backup_folder = getkey(conffile, section, 'backupdir')
+                return [] unless File.directory? backup_folder
+                backups_list = []
+                Dir.glob("#{backup_folder}/#{appname}*").each do|f|
+                    f_data = {"name" => File.basename(f),
+                              "date" => File.stat(f).mtime
+                             }
+                    backups_list << f_data  
+                end
+                backups_list
+            end
+
         end
     end
 end
