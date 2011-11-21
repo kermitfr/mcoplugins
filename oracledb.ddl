@@ -31,6 +31,14 @@ action "execute_sql", :description => "Execute a SQL file on local PostgreSQL da
           :optional    => false,
           :maxlength   => 40
 
+    input :instance,
+          :prompt      => "Instance Nale",
+          :description => "Name of Oracle Instance to use",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
     output :logfile,
            :description => "The status of the script execution",
            :display_as  => "Execution Log"

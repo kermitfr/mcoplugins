@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'curb'
+#require 'curb'
 require 'inifile'
 require 'socket'
 require 'json'
@@ -47,7 +47,15 @@ module MCollective
             end
             db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
             db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
-            cmd = "su oracle -c \"sqlplus #{db_user}/#{db_password} @#{fileout}\""
+	    oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
+	    cmd = "su #{oracle_sys_user} <<- 'END'
+export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01;
+export ORACLE_BASE=/u01/app/oracle; 
+export ORACLE_SID=tetrix02;
+export PATH=$ORACLE_HOME/bin:$PATH
+sqlplus -s #{db_user}/#{db_password} @#{fileout}
+END
+"
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
             file_name = "oracle.sql.log.#{Time.now.to_i}"
@@ -59,19 +67,28 @@ module MCollective
 
         action "inventory" do
             reply.fail! "Error - No Oracle server found or started" unless check_oracle
-            reply['result'] = inventory
+	    Log.debug "Check Oracle OK!!"
+	    reply['result'] = inventory
         end
 
         private
 
-        def check_oracle(instance_name)
+        def check_oracle
             conffile = '/etc/kermit/kermit.cfg'
             section = 'oracledb'
 
             oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
-            cmd = "su #{oracle_sys_user} -c \"echo 'select sysdate from dual;' | sqlplus / as sysdba\""
+	    Log.debug "Oracle SysUser: #{oracle_sys_user}"
+            cmd = "su #{oracle_sys_user} <<-'END'
+export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01
+export ORACLE_BASE=/u01/app/oracle 
+export ORACLE_SID=tetrix02
+export PATH=$ORACLE_HOME/bin:$PATH
+echo 'select sysdate from dual;' | sqlplus / as sysdba
+END
+"     
             Log.debug "Check Oracle Command: #{cmd}"
-            %x[#{cmd}]
+            result = %x[#{cmd}]
             return $? == 0
         end
 
@@ -84,8 +101,24 @@ module MCollective
             query << " ('WMSYS','SYSTEM','SYS','OUTLN','ORAEXPLOIT','DBSNMP','APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
             query << " group by owner,object_type order by owner,object_type;"
             instances.each do |instance|
-                result = execute_query(generate_query_file(query))     
-            end
+                result = execute_query(generate_query_file(query))
+		instance_data = []
+            	result.each_line do |resultline|
+			if not resultline.nil?
+				line_content = resultline.split(/;/)
+				if line_content.length == 3
+					data = {"user_name" => line_content[0].strip!,
+						"obj_type" => line_content[1].strip!,
+						"number" => line_content[2].strip! }
+					Log.debug "Line content: #{data}"
+					instance_data << data
+				else
+					Log.warn "Wrong response line size: #{line_content}"
+				end
+			end
+		end
+		instance[:data] = instance_data
+	    end
             jsonfilename = send_inventory(dump_inventory('oracledb', inventory))
             jsonfilename
         end
@@ -108,16 +141,15 @@ module MCollective
         def generate_query_file(query)
             file_name = "/tmp/query.#{rand(36**16).to_s(36)}.#{Time.now.to_i}.sql"
             the_file=File.open( file_name, "w" ) 
-            the_file.puts "set colsep ;"
-            the_file.puts "set pagesize 0"
-            the_file.puts "set trimspool on"
-            the_file.puts "set headsep off"
-            the_file.puts "set linesize 32000"
+            the_file.puts "SET COLSEP \";\""
+            the_file.puts "SET PAGESIZE 0"
+            the_file.puts "SET TRIMSPOOL on"
+            the_file.puts "SET HEADSEP off"
+            the_file.puts "SET LINESIZE 32000"
             the_file.puts "#{query}"
             the_file.puts "EXIT 0"
             the_file.close
             file_name 
-            end 
         end
 
         def send_log(logfile)
@@ -159,7 +191,13 @@ module MCollective
             section = 'oracledb'
 
             oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
-            cmd = "su #{oracle_sys_user} -c \"sqlplus / as sysdba @#{sql_file_name}\""
+            cmd = "su #{oracle_sys_user} <<- 'END'
+export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01
+export ORACLE_BASE=/u01/app/oracle; export ORACLE_SID=tetrix02
+export PATH=$ORACLE_HOME/bin:$PATH
+sqlplus -s / as sysdba @#{sql_file_name}
+END
+" 
 
             Log.debug "Command RUN: #{cmd}"
 
@@ -177,7 +215,9 @@ module MCollective
         def download(repourl, file, targetfolder)
             url="#{repourl}/#{file}".gsub(/([^:])\/\//, '\1/')
             fileout = "#{targetfolder}/#{file}".gsub(/([^:])\/\//, '\1/')
-            Curl::Easy.download(url,filename=fileout)
+            #Curl::Easy.download(url,filename=fileout)
+            cmd="wget #{url} -O #{fileout}"
+            %x[#{cmd}]
             fileout
         end
 
