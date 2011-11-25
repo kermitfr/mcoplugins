@@ -67,8 +67,33 @@ END
 
         action "inventory" do
             reply.fail! "Error - No Oracle server found or started" unless check_oracle
-	    Log.debug "Check Oracle OK!!"
-	    reply['result'] = inventory
+	        Log.debug "Check Oracle OK!!"
+	        reply['result'] = inventory
+        end
+
+        action "export_database" do
+            validate :instancename, String
+            validate :schema, String
+
+            instancename = request[:instancename]
+            schema = request[:schema]
+
+            export_database(instancename, schema)
+        end
+
+        action "sql_list" do
+            filetype = 'sql'
+            result = { :sqllist => [] }
+            SECTION = 'oracledb'
+            MAINCONF = '/etc/kermit/kermit.cfg'
+            ini=IniFile.load(MAINCONF, :comment => '#')
+            params = ini[SECTION]
+            repourl = params['sqlrepo']
+            c =  Curl::Easy.perform(repourl)
+            pattern = /<a.*?href="(.*#{filetype}?)"/
+            m=c.body_str.scan(pattern)
+            result[:sqllist] = m.map{ |item| item.first }
+            reply.data = result
         end
 
         private
@@ -219,6 +244,34 @@ END
             cmd="wget #{url} -O #{fileout}"
             %x[#{cmd}]
             fileout
+        end
+
+        def export_database(instancename, schema)
+            conffile = '/etc/kermit/kermit.cfg'
+            section = 'oracledb'
+
+            export_script = getkey(conffile, section, 'db_export_script')
+
+            cmd = "#{export_script} #{instancename} #{schema}"
+            result = %x[#{cmd}]
+
+            unless $? == 0
+                if $? == 10
+                    reply.fail! "A7X_REFRESH dba directory is not created on the DB"
+                end
+                if $? == 20
+                    reply.fail! "NAS mount point (default /mnt/nas) does not exist"
+                end
+                if $? == 21
+                    reply.fail! "NAS mount point is not mounted"
+                end
+                if $? == 22
+                    reply.fail! "NAS mount point is not writable"
+                end
+                reply.fail! "Generic error. Check the log"
+            end
+
+            reply['filename'] = result
         end
 
         end

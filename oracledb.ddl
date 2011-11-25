@@ -51,3 +51,11 @@ action "inventory", :description => "Create inventory of local PostgreSQL DB" do
            :description => "Inventory File Name",
            :display_as  => "Inventory"
 end
+
+action "sql_list", :description => "Get list of executable SQLs" do
+    display :always
+
+    output :sqllist,
+           :description => "List of executable SQLs scripts",
+           :display_as  => "SQL List"
+end
