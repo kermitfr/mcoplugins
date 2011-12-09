@@ -30,6 +30,8 @@ module MCollective
                         :timeout     => 60
 
         action "execute_sql" do
+            # TODO : set the sid as a parameter
+
             reply.fail! "Error - No Oracle server found or started" unless check_oracle
             Log.debug "Executing execute_sql Action"
             conffile = '/etc/kermit/kermit.cfg'
@@ -45,13 +47,20 @@ module MCollective
                 reply['status'] = "Error - Unable to get #{request[:sqlfile]}"
                 reply.fail! "Error - Unable to get #{request[:sqlfile]} "
             end
+
             db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
             db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
-	    oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
-	    cmd = "su #{oracle_sys_user} <<- 'END'
-export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01;
-export ORACLE_BASE=/u01/app/oracle; 
-export ORACLE_SID=tetrix02;
+
+#           oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
+
+            orahome,orasid=oratab
+            oracle_sys_user = orauser(orahome)
+            oracle_base=orabase(orahome)
+
+            cmd = "su #{oracle_sys_user} <<- 'END'
+export ORACLE_HOME=#{orahome};
+export ORACLE_BASE=#{oracle_base}; 
+export ORACLE_SID=#{orasid};
 export PATH=$ORACLE_HOME/bin:$PATH
 sqlplus -s #{db_user}/#{db_password} @#{fileout}
 END
@@ -67,8 +76,8 @@ END
 
         action "inventory" do
             reply.fail! "Error - No Oracle server found or started" unless check_oracle
-	        Log.debug "Check Oracle OK!!"
-	        reply['result'] = inventory
+            Log.debug "Check Oracle OK!!"
+            reply['result'] = inventory
         end
 
         action "export_database" do
@@ -98,20 +107,55 @@ END
 
         private
 
-        def check_oracle
-            conffile = '/etc/kermit/kermit.cfg'
-            section = 'oracledb'
+        def oratab
+            oraconf='/etc/oratab'
+            fic = File.read(oraconf)
+            tab = fic.scan(/^([^#]\w+):([\w\/]+oracle[\w\/]+db[\w\/]+):\w*/)
+            home = tab ? tab[0][1] : nil
+            sid  = tab ? tab[0][0] : nil
+            return home,sid
+        end
 
-            oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
-	    Log.debug "Oracle SysUser: #{oracle_sys_user}"
+        def orauser(orahome)
+            #conffile = '/etc/kermit/kermit.cfg'
+            #section = 'oracledb'
+            #oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
+            uid=File.stat(orahome).uid
+            username=Etc.getpwuid(uid).name
+        end
+
+        def orabase(orahome)
+            if orahome.match('10g')
+                orabase = orahome
+            else
+                base = orahome.scan(/^[\/\w-]*?oracle/)  
+                orabase = base ? base[0] : nil
+            end
+            orabase
+        end
+
+        def check_oracle
+            orahome,orasid=oratab
+            oracle_sys_user = orauser(orahome)
+            Log.debug "Oracle SysUser: #{oracle_sys_user}"
+            oracle_base=orabase(orahome)
+
+#           cmd = "su #{oracle_sys_user} <<-'END'
+#export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01
+#export ORACLE_BASE=/u01/app/oracle 
+#export ORACLE_SID=tetrix02
+#export PATH=$ORACLE_HOME/bin:$PATH
+#echo 'select sysdate from dual;' | sqlplus / as sysdba
+#END
+#"     
             cmd = "su #{oracle_sys_user} <<-'END'
-export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01
-export ORACLE_BASE=/u01/app/oracle 
-export ORACLE_SID=tetrix02
+export ORACLE_HOME=#{orahome}
+export ORACLE_BASE=#{oracle_base}
+export ORACLE_SID=#{orasid}
 export PATH=$ORACLE_HOME/bin:$PATH
 echo 'select sysdate from dual;' | sqlplus / as sysdba
 END
-"     
+"
             Log.debug "Check Oracle Command: #{cmd}"
             result = %x[#{cmd}]
             return $? == 0
@@ -123,27 +167,28 @@ END
             inventory[:instances] = instances
             query = "select OWNER, OBJECT_TYPE,count(*) from dba_objects "
             query << " where owner not in"
-            query << " ('WMSYS','SYSTEM','SYS','OUTLN','ORAEXPLOIT','DBSNMP','APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
+            query << " ('WMSYS','SYSTEM','SYS','OUTLN','ORAEXPLOIT','DBSNMP'"
+            query << ",'APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
             query << " group by owner,object_type order by owner,object_type;"
             instances.each do |instance|
                 result = execute_query(generate_query_file(query))
-		instance_data = []
-            	result.each_line do |resultline|
-			if not resultline.nil?
-				line_content = resultline.split(/;/)
-				if line_content.length == 3
-					data = {"user_name" => line_content[0].strip!,
-						"obj_type" => line_content[1].strip!,
-						"number" => line_content[2].strip! }
-					Log.debug "Line content: #{data}"
-					instance_data << data
-				else
-					Log.warn "Wrong response line size: #{line_content}"
-				end
-			end
-		end
-		instance[:data] = instance_data
-	    end
+                instance_data = []
+                result.each_line do |resultline|
+                    if not resultline.nil?
+                        line_content = resultline.split(/;/)
+                            if line_content.length == 3
+                                data = {"user_name" => line_content[0].strip!,
+                                "obj_type" => line_content[1].strip!,
+                                "number" => line_content[2].strip! }
+                                Log.debug "Line content: #{data}"
+                                instance_data << data
+                            else
+                                Log.warn "Wrong response line size: #{line_content}"
+                            end
+                    end
+                end
+                instance[:data] = instance_data
+            end
             jsonfilename = send_inventory(dump_inventory('oracledb', inventory))
             jsonfilename
         end
@@ -212,18 +257,25 @@ END
         end 
 
         def execute_query(sql_file_name, database=nil)
-            conffile = '/etc/kermit/kermit.cfg'
-            section = 'oracledb'
+            # TODO : set the sid as a parameter
 
-            oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
+            #conffile = '/etc/kermit/kermit.cfg'
+            #section = 'oracledb'
+            #oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
+
+            orahome,orasid=oratab
+            oracle_sys_user = orauser(orahome)
+            oracle_base=orabase(orahome)
+
+            
             cmd = "su #{oracle_sys_user} <<- 'END'
-export ORACLE_HOME=/u01/app/oracle/product/1120/db11g01
-export ORACLE_BASE=/u01/app/oracle; export ORACLE_SID=tetrix02
+export ORACLE_HOME=#{orahome}
+export ORACLE_BASE=#{oracle_base}
+export ORACLE_SID=#{orasid}
 export PATH=$ORACLE_HOME/bin:$PATH
 sqlplus -s / as sysdba @#{sql_file_name}
 END
-" 
-
+"
             Log.debug "Command RUN: #{cmd}"
 
             result = %x[#{cmd}]
