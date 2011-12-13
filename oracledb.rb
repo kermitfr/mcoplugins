@@ -92,20 +92,30 @@ END
 
         action "sql_list" do
             filetype = 'sql'
+            fileout = '/tmp/repolist.html'
             result = { :sqllist => [] }
             SECTION = 'oracledb'
             MAINCONF = '/etc/kermit/kermit.cfg'
             ini=IniFile.load(MAINCONF, :comment => '#')
             params = ini[SECTION]
             repourl = params['sqlrepo']
-            c =  Curl::Easy.perform(repourl)
+            #c =  Curl::Easy.perform(repourl)
+            cmd="wget #{repourl} -O #{fileout}"
             pattern = /<a.*?href="(.*#{filetype}?)"/
-            m=c.body_str.scan(pattern)
+            fic = File.read(fileout)
+            m=fic.scan(pattern)
             result[:sqllist] = m.map{ |item| item.first }
             reply.data = result
         end
 
         private
+
+        def check_oratab
+            oraconf='/etc/oratab'
+            if File.exist? oraconf do
+                return True
+            return False
+        end
 
         def oratab
             oraconf='/etc/oratab'
@@ -135,6 +145,8 @@ END
         end
 
         def check_oracle
+            if not check_oratab
+                reply.fail! "Error - No Oracle server found"
             orahome,orasid=oratab
             oracle_sys_user = orauser(orahome)
             Log.debug "Oracle SysUser: #{oracle_sys_user}"
