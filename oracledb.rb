@@ -54,6 +54,8 @@ module MCollective
 #           oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
 
             orahome,orasid=oratab
+            orasid=request[:instancename] if request[:instancename]
+
             oracle_sys_user = orauser(orahome)
             oracle_base=orabase(orahome)
 
@@ -111,15 +113,19 @@ END
         private
 
         def check_oratab
-            File.exist? '/etc/oratab' 
+            File.exist? '/etc/oratab'
         end
 
         def oratab
             oraconf='/etc/oratab'
             fic = File.read(oraconf)
             tab = fic.scan(/^([^#]\w+):([\w\/]+oracle[\w\/]+db[\w\/]+):\w*/)
-            home = tab ? tab[0][1] : nil
-            sid  = tab ? tab[0][0] : nil
+            if tab && !tab.empty?
+              sid  = tab[0][0]
+              home = tab[0][1]
+            else
+              home = sid = nil
+            end
             return home,sid
         end
 
@@ -144,6 +150,7 @@ END
         def check_oracle
             reply.fail! "Error - No Oracle server found" unless check_oratab
             orahome,orasid=oratab
+            reply.fail! "Error - No Oracle server found" unless orahome 
             oracle_sys_user = orauser(orahome)
             Log.debug "Oracle SysUser: #{oracle_sys_user}"
             oracle_base=orabase(orahome)
@@ -179,7 +186,7 @@ END
             query << ",'APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
             query << " group by owner,object_type order by owner,object_type;"
             instances.each do |instance|
-                result = execute_query(generate_query_file(query))
+                result = execute_query(generate_query_file(query),sid=instance['instance_name'])
                 instance_data = []
                 result.each_line do |resultline|
                     if not resultline.nil?
@@ -231,18 +238,18 @@ END
         end
 
         def send_log(logfile)
-            cmd = "ruby /usr/local/bin/kermit/queue/sendlog.rb #{logfile}"
-
+            sendcmd='/usr/local/bin/kermit/queue/sendlog.rb'
+            reply.fail! "sendlog.rb not found" unless File.exists?(sendcmd)
+            cmd = "ruby #{sendcmd} #{logfile}"
             %x[#{cmd}]
-
             logfile
         end
 
         def send_inventory(jsoncompactfname)
-            cmd = "ruby /usr/local/bin/kermit/queue/send.rb #{jsoncompactfname}"
-
+            sendcmd='/usr/local/bin/kermit/queue/send.rb'
+            reply.fail! "send.rb not found" unless File.exists?(sendcmd)
+            cmd = "ruby #{sendcmd} #{jsoncompactfname}"
             %x[#{cmd}]
-
             jsoncompactfname
         end
 
@@ -255,7 +262,7 @@ END
                         i_data = {
                             "instance_name" => data[0],
                             "instance_home" => data[1],
-                            "run_at_startup" => data[2]
+                            "run_at_startup" => data[2].chomp
                         }
                         instances << i_data
                     end
@@ -264,7 +271,7 @@ END
             instances
         end 
 
-        def execute_query(sql_file_name, database=nil)
+        def execute_query(sql_file_name, sid=nil, database=nil)
             # TODO : set the sid as a parameter
 
             #conffile = '/etc/kermit/kermit.cfg'
@@ -272,6 +279,7 @@ END
             #oracle_sys_user = Base64.decode64(getkey(conffile, section, 'oracle_sys_user'))
 
             orahome,orasid=oratab
+            orasid=sid if sid
             oracle_sys_user = orauser(orahome)
             oracle_base=orabase(orahome)
 
