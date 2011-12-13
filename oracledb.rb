@@ -111,10 +111,7 @@ END
         private
 
         def check_oratab
-            oraconf='/etc/oratab'
-            if File.exist? oraconf do
-                return True
-            return False
+            File.exist? '/etc/oratab' 
         end
 
         def oratab
@@ -145,8 +142,7 @@ END
         end
 
         def check_oracle
-            if not check_oratab
-                reply.fail! "Error - No Oracle server found"
+            reply.fail! "Error - No Oracle server found" unless check_oratab
             orahome,orasid=oratab
             oracle_sys_user = orauser(orahome)
             Log.debug "Oracle SysUser: #{oracle_sys_user}"
