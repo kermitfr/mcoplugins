@@ -103,6 +103,8 @@ END
             repourl = params['sqlrepo']
             #c =  Curl::Easy.perform(repourl)
             cmd="wget #{repourl} -O #{fileout}"
+            result = %x[#{cmd}]
+            Log.debug result
             pattern = /<a.*?href="(.*#{filetype}?)"/
             fic = File.read(fileout)
             m=fic.scan(pattern)
