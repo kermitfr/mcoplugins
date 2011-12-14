@@ -108,8 +108,7 @@ END
             pattern = /<a.*?href="(.*#{filetype}?)"/
             fic = File.read(fileout)
             m=fic.scan(pattern)
-            result[:sqllist] = m.map{ |item| item.first }
-            reply.data = result
+            reply['sqllist'] = m.map{ |item| item.first }
         end
 
         private
