@@ -61,7 +61,8 @@ module MCollective
             end
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
-            file_name = "sql.log.#{Time.now.to_i}"
+            shorthostname=`hostname -s`.chomp
+            file_name = "sql.log.#{shorthostname}.#{Time.now.to_i}"
             Log.debug "Creating log file #{file_name}"
 	        File.open("/tmp/#{file_name}", 'w') {|f| f.write(result) }
             send_log("/tmp/#{file_name}")

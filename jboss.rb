@@ -117,7 +117,8 @@ module MCollective
                 reply.fail! "Error - Unable to find #{logfile}" \
                             unless File.exists? logfile
 
-                file_name = "server.log.#{Time.now.to_i}"
+                shorthostname=`hostname -s`.chomp
+                file_name = "server.log.#{shorthostname}.#{Time.now.to_i}"
 
                 cmd="tail -n 1000 #{logfile}"
                 result=%x[#{cmd}]
