@@ -17,6 +17,7 @@ require 'inifile'
 require 'socket'
 require 'json'
 require 'base64'
+require 'etc'
 
 module MCollective
     module Agent
