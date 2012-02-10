@@ -201,7 +201,7 @@ module MCollective
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
             end
  
-            cmd << "psql -U #{db_user} -tc \"#{query}\""
+            cmd << "psql -U #{db_user} -d postgres -tc \"#{query}\""
             Log.debug "Check Postgres Command: #{cmd}"
             %x[#{cmd}]
             return $? == 0
@@ -291,7 +291,7 @@ module MCollective
             jsoncompactfname
         end
         
-        def execute_query(query, database=nil)
+        def execute_query(query, database='postgres')
             conffile = '/etc/kermit/kermit.cfg'
             section = 'postgresql'
 
