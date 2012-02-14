@@ -28,18 +28,19 @@ module MCollective
                      :description => "Jboss inventory and app. deployment",
                      :author      => "Louis Coilliot",
                      :license     => "",
-                     :version     => "0.1",
+                     :version     => "0.2",
                      :url         => "",
                      :timeout     => 120
 
             # JBoss inventory
             action "inventory" do
-                jbosshome = guess_jboss_home1(run_cmd)
-                reply.fail! "Error - Unable to detect JBoss (not started ?)" unless jbosshome
-                inventory        
+                jbosshome = guess_jboss_home(run_cmd, jb_init)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+                inventory
             end
 
-            # List applications available on a repository 
+            # List applications available on a repository
             action "applist" do
                 result = {:applist => [], :apptype => ""}
                 validate :apptype, String
@@ -54,7 +55,7 @@ module MCollective
 
             # List the deployed applications of the running instance 
             action "deploylist" do
-                webdeployment 
+                webdeployment
             end
 
             # Deploy an application in JBoss 
@@ -67,7 +68,7 @@ module MCollective
                 appfile = request[:appfile]
                 instancename = request[:instancename]
 
-                jbosshome = guess_jboss_home1(run_cmd)
+                jbosshome = guess_jboss_home(run_cmd, jb_init)
                 reply.fail! "Error - Unable to detect JBoss (not started ?)" \
                             unless jbosshome
 
@@ -88,7 +89,7 @@ module MCollective
                 appfile = request[:appfile]
                 instancename = request[:instancename]
 
-                jbosshome = guess_jboss_home1(run_cmd)
+                jbosshome = guess_jboss_home(run_cmd, jb_init)
                 reply.fail! "Error - Unable to detect JBoss (not started ?)" \
                             unless jbosshome
 
@@ -96,7 +97,7 @@ module MCollective
                 reply.fail! "Error - Unable to find #{deployfolder}" \
                             unless File.directory? deployfolder
 
-                File.delete("#{deployfolder}#{appfile}")                
+                File.delete("#{deployfolder}#{appfile}")
 
                 result[:status] = "#{deployfolder}#{appfile}"
                 reply.data = result
@@ -109,7 +110,7 @@ module MCollective
 
                 instancename = request[:instancename]
 
-                jbosshome = guess_jboss_home1(run_cmd)
+                jbosshome = guess_jboss_home(run_cmd, jb_init)
                 reply.fail! "Error - Unable to detect JBoss (not started ?)" \
                             unless jbosshome
 
@@ -126,7 +127,7 @@ module MCollective
                 File.open("/tmp/#{file_name}", 'w') {|f| f.write(result) }
 
                 send_log("/tmp/#{file_name}")
-                reply['logfile'] = file_name            
+                reply['logfile'] = file_name
             end
 
             action "get_app_backups" do
@@ -145,13 +146,13 @@ module MCollective
                 backupfile = request[:backupfile]
                 instancename = request[:instancename]
 
-                jbosshome = guess_jboss_home1(run_cmd)
+                jbosshome = guess_jboss_home(run_cmd, jb_init)
                 reply.fail! "Error - Unable to detect JBoss (not started ?)" \
                             unless jbosshome
 
                 deployfolder="#{jbosshome}/server/#{instancename}/deploy/"
                 reply.fail! "Error - Unable to find #{deployfolder}" \
-                            unless File.directory? deployfolder    
+                            unless File.directory? deployfolder
                 result[:status] = rollback(backupfile, deployfolder)
                 reply.data = result
             end
@@ -170,7 +171,7 @@ module MCollective
                 end
                 nil
             end
-            
+
             # Get the java run cmd from the system
             def java_cmd
                 cmd="/bin/ps aux"
@@ -183,8 +184,8 @@ module MCollective
                 end
                 nil
             end
-            
-            
+
+
             # 1st attempt to guess JBoss home
             def guess_jboss_home1(cmdline)
                 if cmdline =~ /\s(\/[^\s]*)\/bin\/run.sh\s+/
@@ -192,26 +193,42 @@ module MCollective
                 end
                 nil
             end
-            
-            
+
+
             # 2d attempt to guess JBoss home
             def guess_jboss_home2(jbinit)
                 return nil unless FileTest.readable? jbinit
                 File.open(jbinit).each do |line|
-                    next unless line =~ /^\s*JBOSS_HOME=.*["'](.*)["']/ 
+                    next unless line =~ /^\s*JBOSS_HOME=.*["'](.*)["']/
                     return $1
                 end
                 nil
             end
-            
-            # 1st attempt to guess java bin 
+
+
+            # Guess JBoss home
+            def guess_jboss_home(cmdline, jbinit)
+                guess_jboss_home1(cmdline) || guess_jboss_home2(jbinit)
+            end
+
+            # Give the first full path found of a shell command
+            def which(program)
+                ENV['PATH'].split(File::PATH_SEPARATOR).any? do |directory|
+                    if File.executable?(File.join(directory, program.to_s))
+                        return "#{directory}/#{program}"
+                    end
+                end
+                nil
+            end 
+
+            # 1st attempt to guess java bin
             def guess_java_bin1(javacmd)
                 if javacmd =~ /\s(\/[^\s]*\/bin\/java)\s+/
                     return $1 
                 end
                 nil
             end
-            
+
             # 2d attempt to guess java bin
             def guess_java_bin2(jbinit)
                 return nil unless FileTest.readable? jbinit
@@ -222,7 +239,13 @@ module MCollective
                 end
                 nil
             end
-            
+
+            # Guess java bin
+            def guess_java_bin(javacmd, jbinit)
+                guess_java_bin1(javacmd) || guess_java_bin2(jbinit) || which('java')
+            end
+
+
             # Get the jboss version using jmx and twiddle.sh
             # jmx = Java Management eXtensions
             def jboss_ver(jbosshome)
@@ -231,47 +254,55 @@ module MCollective
                 jbossver = %x[#{twiddlecmd}].split('=')[1]
                 jbossver = nil unless $? == 0
                 jbossver.chomp! if jbossver
-                File.delete('twiddle.log') if File.exists?('twiddle.log') 
+                File.delete('twiddle.log') if File.exists?('twiddle.log')
                 jbossver
             end
-            
+
             # Get the active jboss instance from the running command line
             def active_instance(cmdline)
                 if cmdline =~ /\-c\s+(.*?)\s+/
-                    return $1 
+                    return $1
                 end
                 nil
             end
-            
+
             # Get the java version by running the java binary
             def java_ver(javabin)
-                javaverline = javabin ? %x[#{javabin} -version 2>&1] : nil 
+                javaverline = javabin ? %x[#{javabin} -version 2>&1] : nil
                 if javaverline =~ /java version "(.*)"/
                     return $1
                 end
                 nil
             end
-            
+
             # List the data sources in an instance
             def ds_list(folder, dstypes)
                 dslist  = Array.new
-                Dir.glob("#{folder}deploy/**/*-ds.xml").each do|f| 
-                    data = XmlSimple.xml_in(f)
-                    dstypes.each do |type|
+                itm   = "idle_timeout_minutes"
+                ncs   = "new_connection_sql"
+                cvcs  = "check_valid_connection_sql"
+                vcccn = "valid_connection_checker_class_name"
+                sd    = "security_domain"
+                pscs  = "prepared_statement_cache_size"
+                dstypes.each do |type|
+                Dir.glob("#{folder}deploy/**/*-ds.xml").each do|f|
+                    data  = XmlSimple.xml_in(f)
                        if data[type]
                            data[type].each do |ds|
-                               dsinfo = {"jndi_name" => ds["jndi-name"] ? ds["jndi-name"][0] : "",
-                                         "connection_url" => ds["connection-url"] ? ds["connection-url"][0] : "",
-                                         "driver_class" => ds["driver-class"] ? ds["driver-class"][0] : "",
-                                         "username" => ds["user-name"] ? ds["user-name"][0] : "",
-                                         "min_pool_size" => ds["min-pool-size"] ? ds["min-pool-size"][0] : "",
-                                         "max_pool_size" => ds["max-pool-size"] ? ds["max-pool-size"][0] : "",
-                                         "idle_timeout_minutes" => ds["idle-timeout-minutes"] ? ds["idle-timeout-minutes"][0] : "",
-                                         "new_connection_sql" => ds["new-connection-sql"] ? ds["new-connection-sql"][0] : "",
-                                         "check_valid_connection_sql" => ds["check-valid-connection-sql"] ? ds ["check-valid-connection-sql"][0] : "",
-                                         "valid_connection_checker_class_name" => ds["valid-connection-checker-class-name"] ? ds["valid-connection-checker-class-name"][0] : "",
-                                         "security_domain" => ds["security-domain"] ? ds["security-domain"][0] : "",
-                                         "prepared_statement_cache_size" => ds["prepared-statement-cache-size"] ? ds["prepared-statement-cache-size"][0] : "" }
+                               dsinfo = {
+        "jndi_name" => ds["jndi-name"] ? ds["jndi-name"][0] : "",
+        "connection_url" => ds["connection-url"] ? ds["connection-url"][0] : "",
+        "driver_class" => ds["driver-class"] ? ds["driver-class"][0] : "",
+        "username" => ds["user-name"] ? ds["user-name"][0] : "",
+        "min_pool_size" => ds["min-pool-size"] ? ds["min-pool-size"][0] : "",
+        "max_pool_size" => ds["max-pool-size"] ? ds["max-pool-size"][0] : "",
+        itm   => ds[itm]   ? ds[itm][0]   : "",
+        ncs   => ds[ncs]   ? ds[ncs][0]   : "",
+        cvcs  => ds[cvcs]  ? ds[cvcs][0]  : "",
+        vcccn => ds[vcccn] ? ds[vcccn][0] : "",
+        sd    => ds[sd]    ? ds[sd][0]    : "",
+        pscs  => ds[pscs]  ? ds[pscs][0]  : "" 
+                               }
                                dslist << dsinfo
                            end
                        end
@@ -279,12 +310,13 @@ module MCollective
                 end
                 dslist
             end
-            
+
             # List the applications in an instance
             def app_list(folder, archivetypes)
-                applist = Array.new    
+                applist = Array.new
                 archivetypes.each do |atype|
-                    Dir.glob("#{folder}deploy/**/*.#{atype}", File::FNM_CASEFOLD).each do|f| 
+                    globexpr = "#{folder}deploy/**/*.#{atype}"
+                    Dir.glob(globexpr, File::FNM_CASEFOLD).each do|f| 
                         appinfo = {"name" => File.basename(f),
                                    "exploded" => File.directory?(f),
                                    "size" => File.size?(f), 
@@ -294,7 +326,7 @@ module MCollective
                 end
                 applist
             end
-            
+
             # List the applications in the running instance, querying JMX
             def webdeployment 
                 jbosshome = guess_jboss_home1(run_cmd)
@@ -305,16 +337,16 @@ module MCollective
                             unless File.readable? twiddlecmd 
                 twiddleparams = "-q query 'jboss.web.deployment:*'"
 
-                cmd = "#{twiddlecmd} #{twiddleparams}" 
+                cmd = "#{twiddlecmd} #{twiddleparams}"
                 applist = Array.new
                 %x[#{cmd}].each_line do |line|
-                    applist << line.split(':')[1].chomp    
+                    applist << line.split(':')[1].chomp
                 end
-                reply.data = { :applist => applist } 
+                reply.data = { :applist => applist }
             end
 
 
-            # Returns the url of the app repository from a ini file 
+            # Returns the url of the app repository from a ini file
             def repourl
                 section = 'as'
                 mainconf = '/etc/kermit/kermit.cfg'
@@ -323,7 +355,7 @@ module MCollective
                 params['apprepo']
             end
 
-            # Download a file with Curl 
+            # Download a file with Curl
             def download(repourl, file, targetfolder)
                 url="#{repourl}/#{file}".gsub(/([^:])\/\//, '\1/')
                 fileout = "#{targetfolder}/#{file}".gsub(/([^:])\/\//, '\1/')
@@ -331,72 +363,76 @@ module MCollective
                 fileout
             end
 
+            # Get the jboss init service name
+            def jb_init
+                return '/etc/init.d/jboss'
+            end
+
             # Main Jboss inventory
             def inventory 
-                jbinit  = '/etc/init.d/jboss'
-                
-                archivetypes = [ 'war' , 'ear' ] 
-                
+                artypes = [ 'war', 'ear' ]
+
                 dstypes = [
                 'no-tx-datasource',
                 'local-tx-datasource',
                 'xa-datasource',
                 'ha-local-tx-datasource',
                 'ha-xa-datasource' ]
-                
+
                 inventory = Hash.new
 
                 cmdline=run_cmd
-                
+
                 javacmd=java_cmd
-                
-                jbosshome = guess_jboss_home1(cmdline) || guess_jboss_home2(jbinit)
-                
-                javabin = guess_java_bin1(javacmd) || guess_java_bin2(jbinit)
-                
+
+                jbosshome = guess_jboss_home(cmdline, jb_init)
+
+                javabin   = guess_java_bin(javacmd, jb_init)
+
                 inventory[:java_bin] = javabin
-                
+
                 inventory[:java_ver] = java_ver(javabin)
-                
+
                 inventory[:server_name] = active_instance(cmdline)
-                
-                inventory[:jboss_ver] = jboss_ver(jbosshome)
-                
+
+                inventory[:jboss_ver]  = jboss_ver(jbosshome)
+
                 inventory[:jboss_home] = jbosshome
-                
+
                 instancelist=Array.new
-                
+
                 if jbosshome
                     Dir["#{jbosshome}/server/*/"].each do |folder|
                         if File.directory? "#{folder}/deploy"
-                            instancehash = Hash.new
-                            instancename = File.basename(folder)
-                            instancehash[:name] = instancename
-                            instancehash[:applilist] = app_list(folder, archivetypes)
-                            instancehash[:datasources]  = ds_list(folder,  dstypes) 
-                            instancelist << instancehash
+                          instancehash = Hash.new
+                          instancename = File.basename(folder)
+                          instancehash[:name] = instancename
+                          instancehash[:applilist] = app_list(folder, artypes)
+                          instancehash[:datasources]  = ds_list(folder, dstypes)
+                          instancelist << instancehash
                         end
                     end
                 end
-                
+
                 inventory[:instances] = instancelist
-                
+
                 hostname = Socket.gethostname
-                
+
                 jsoncompactfname="/tmp/jbossinventory-#{hostname}-compact.json"
                 jsoncompactout = File.open(jsoncompactfname,'w')
                 jsoncompactout.write(JSON.generate(inventory))
                 jsoncompactout.close
-                
+
                 jsonprettyfname="/tmp/jbossinventory-#{hostname}-pretty.json"
                 jsonprettyout = File.open(jsonprettyfname,'w')
                 jsonprettyout.write(JSON.pretty_generate(inventory))
                 jsonprettyout.close
-                
-                cmd = "ruby /usr/local/bin/kermit/queue/send.rb #{jsoncompactfname}"
-                
+
+                cmd  = "ruby /usr/local/bin/kermit/queue/send.rb "
+                cmd << "#{jsoncompactfname}"
+
                 %x[#{cmd}]
-                
+
                 reply.data = { :result => jsoncompactfname }
             end
 
@@ -419,11 +455,14 @@ module MCollective
                 section = 'jbossas' 
                 source_file = "#{deployfolder}/#{appname}"
                 if not File.exists?(source_file)
-                    Log.debug "Backup file for #{appname} not created. App does not exists in deploy folder"
+                    dbgmsg  = "The backup file for #{appname} was not created. "
+                    dbgmsg << "The app does not exist in the deploy folder."
+                    Log.debug(dbgmsg)
                     return false
                 end
                 backup_folder = getkey(conffile, section, 'backupdir')
-                FileUtils.mkdir_p(backup_folder) unless File.directory? backup_folder
+                FileUtils.mkdir_p(backup_folder) \
+                    unless File.directory? backup_folder
                 dest_file = "#{backup_folder}/#{appname}.#{Time.now.to_i}"
                 FileUtils.cp source_file, dest_file
                 return true
@@ -435,7 +474,9 @@ module MCollective
                 backup_folder = getkey(conffile, section, 'backupdir')
                 source_file = "#{backup_folder}/#{backupfile}"
                 if not File.exists?(source_file)
-                    return "Backup file #{backupfile} does not exist. Cannot Rollback"
+                    msg = "The backup file #{backupfile} does not exist. "
+                    msg << "Cannot Rollback"
+                    return msg
                 end
                 y = backupfile.split(/\./)
                 y.delete(y.last())
@@ -470,5 +511,4 @@ module MCollective
         end
     end
 end
-
 
