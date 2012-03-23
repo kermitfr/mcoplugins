@@ -12,15 +12,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-metadata     :name        => "Agent to Manage PostgreSQL Database",
-             :description => "PostgreSQL Management Agent",
+metadata     :name        => "Agent to Manage Oracle Database",
+             :description => "Oracle Database Management Agent",
              :author      => "Marco Mornati",
              :license     => "GPLv3",
              :version     => "0.1",
              :url         => "",
              :timeout     => 120
 
-action "execute_sql", :description => "Execute a SQL file on local PostgreSQL database" do
+action "execute_sql", :description => "Execute a SQL file on local Oracle database" do
     display :always
 
     input :sqlfile,
@@ -58,4 +58,61 @@ action "sql_list", :description => "Get list of executable SQLs" do
     output :sqllist,
            :description => "List of executable SQLs scripts",
            :display_as  => "SQL List"
+end
+
+action "export_database", :description => "Export database schema to filesystem" do
+    display :always
+
+    input :instancename,
+          :prompt      => "Instance Name",
+          :description => "Name of Oracle Instance to use",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    input :schema,
+          :prompt      => "Schema Name",
+          :description => "Name of Schema to use",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 100
+
+    output :filename,
+           :description => "Name of exported file",
+           :display_as  => "Name of exported database data file"
+end
+
+action "import_database", :description => "Import database schema from a file"
+do
+    display :always
+
+    input :instancename,
+          :prompt      => "Instance Name",
+          :description => "Name of Oracle Instance to use",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    input :schema,
+          :prompt      => "Schema Name",
+          :description => "Name of Schema to use",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 100
+
+    input :filename,
+          :prompt      => "File Name",
+          :description => "Name of file with exported data",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 200
+
+    output :filename,
+           :description => "Name of exported file",
+           :display_as  => "Name of exported database data file"
 end
