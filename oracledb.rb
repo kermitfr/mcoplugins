@@ -94,6 +94,18 @@ END
             export_database(instancename, schema)
         end
 
+        action "import_database" do
+            validate :instancename, String
+            validate :schema, String
+            validate :filename, String
+            
+            instancename = request[:instancename]
+            schema = request[:schema]
+            file_name = request[:filename]
+
+            import_database(instancename, schema, file_name)
+        end
+
         action "sql_list" do
             filetype = 'sql'
             fileout = '/tmp/repolist.html'
@@ -188,6 +200,18 @@ END
             query << " ('WMSYS','SYSTEM','SYS','OUTLN','ORAEXPLOIT','DBSNMP'"
             query << ",'APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
             query << " group by owner,object_type order by owner,object_type;"
+            #query = "select o.owner \"Who\",o.object_type \"What\",o.\"nb\" \"Nb\", s.\"size\" \"Size (MB)\" from"
+            #query << "(select owner,segment_type,to_char(round(sum(bytes)/1024/1024,2),'999G999G990D00') \"size\""
+            #query << "from dba_segments"
+            #query << "where owner not in ('WMSYS','SYSTEM','SYS','OUTLN','ORAEXPLOIT','DBSNMP','APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
+            #query << "and segment_name not like 'BIN$%'"
+            #query << "group by owner,segment_type) s"
+            #query << "right outer join"
+            #query << "(select owner,object_type,count(*) \"nb\" from dba_objects"
+            #query << "where owner not in ('WMSYS','SYSTEM','SYS','OUTLN','ORAEXPLOIT','DBSNMP','APPQOSSYS','BATCH','ORACLE_OCM','PUBLIC')"
+            #query << "group by owner,object_type) o"
+            #query << "on o.object_type = s.segment_type and o.owner = s.owner"
+            #query << "order by 1,2;"
             instances.each do |instance|
                 result = execute_query(generate_query_file(query),sid=instance['instance_name'])
                 instance_data = []
@@ -344,6 +368,35 @@ END
 
             reply['filename'] = result
         end
+
+        def import_database(instancename, schema, file_name)
+            conffile = '/etc/kermit/kermit.cfg'
+            section = 'oracledb'
+
+            export_script = getkey(conffile, section, 'db_import_script')
+
+            cmd = "#{export_script} #{instancename} #{schema} #{file_name}"
+            result = %x[#{cmd}]
+
+            unless $? == 0
+                if $? == 10
+                    reply.fail! "A7X_REFRESH dba directory is not created on the DB"
+                end
+                if $? == 20
+                    reply.fail! "NAS mount point (default /mnt/nas) does not exist"
+                end
+                if $? == 21
+                    reply.fail! "NAS mount point is not mounted"
+                end
+                if $? == 22
+                    reply.fail! "NAS mount point is not writable"
+                end
+                reply.fail! "Generic error. Check the log"
+            end
+
+            reply['filename'] = result
+        end
+
 
         end
     end
