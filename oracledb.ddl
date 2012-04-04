@@ -84,8 +84,7 @@ action "export_database", :description => "Export database schema to filesystem"
            :display_as  => "Name of exported database data file"
 end
 
-action "import_database", :description => "Import database schema from a file"
-do
+action "import_database", :description => "Import database schema from a file" do
     display :always
 
     input :instancename,
