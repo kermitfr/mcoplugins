@@ -200,34 +200,42 @@ module MCollective
 
             # Get the jboss run cmd from the system
             def run_cmd
+		Log.info "Trying to identify JBoss using cmd"
                 cmd="/bin/ps aux"
                 cmdout = %x[#{cmd}]
                 cmdout.each_line do |line|
                     next unless line =~ /jboss/
-                    if line =~ /\/bin\/run.sh\s+/
+		    Log.debug line
+                    if line =~ /\/bin\/run(.jar|.sh)\s+/
+			Log.info "JBoss found: #{line}"
                         return line
                     end
                 end
+		Log.info "JBoss not found with this method"
                 nil
             end
 
             # Get the java run cmd from the system
             def java_cmd
+		Log.info "Trying to identify JBoss using java"
                 cmd="/bin/ps aux"
                 cmdout = %x[#{cmd}]
                 cmdout.each_line do |line|
                     next unless line =~ /jboss/
+		    Log.debug line
                     if line =~ /\/bin\/java\s+/
+			Log.info "JBoss found: #{line}"
                         return line
                     end
                 end
+		Log.info "JBoss not found with this method"
                 nil
             end
 
 
             # 1st attempt to guess JBoss home
             def guess_jboss_home1(cmdline)
-                if cmdline =~ /\s(\/[^\s]*)\/bin\/run.sh\s+/
+                if cmdline =~ /\s(\/[^\s]*)\/bin\/run(.jar|.sh)\s+/
                     return $1 
                 end
                 nil
