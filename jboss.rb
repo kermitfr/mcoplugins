@@ -72,11 +72,17 @@ module MCollective
                 reply.fail! "Error - Unable to detect JBoss (not started ?)" \
                             unless jbosshome
 
-                deployfolder="#{jbosshome}/server/#{instancename}/deploy/"
+                downloadfolder = "#{jbosshome}/server/#{instancename}/"
+                deployfolder   = "#{jbosshome}/server/#{instancename}/deploy/"
                 reply.fail! "Error - Unable to find #{deployfolder}" \
                             unless File.directory? deployfolder
                 create_backup(appfile, deployfolder)
-                result[:status] = download(repourl, appfile, deployfolder)
+                result[:status] = download(repourl, appfile, downloadfolder)
+                srcfile="#{downloadfolder}/#{appfile}"
+                # You need to move the file after the download, otherwise
+                # if the download takes time, the deployment will start before
+                # the end of the download and fail.
+                FileUtils.mv(srcfile, deployfolder, :force => true)
                 reply.data = result
             end
 
