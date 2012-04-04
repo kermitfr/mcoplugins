@@ -86,6 +86,39 @@ module MCollective
                 reply.data = result
             end
 
+            # Redeploy an application in JBoss 
+            action "redeploy" do
+                result = {:status => ""}
+
+                validate :appfile, String
+                validate :instancename, String
+
+                appfile = request[:appfile]
+                instancename = request[:instancename]
+
+                jbosshome = guess_jboss_home(run_cmd, jb_init)
+                reply.fail! "Error - Unable to detect JBoss (not started ?)" \
+                            unless jbosshome
+
+                downloadfolder = "#{jbosshome}/server/#{instancename}/"
+                deployfolder   = "#{jbosshome}/server/#{instancename}/deploy/"
+                reply.fail! "Error - Unable to find #{deployfolder}" \
+                            unless File.directory? deployfolder
+		
+		#Check presence of app to redeploy in deploy folder (app must exist)
+	        reply.fail! "Error - Application do redeploy does not exist in target path" \
+                            unless check_app_existence(appfile, deployfolder)	
+		#Redeploy
+                create_backup(appfile, deployfolder)
+                result[:status] = download(repourl, appfile, downloadfolder)
+                srcfile="#{downloadfolder}/#{appfile}"
+                # You need to move the file after the download, otherwise
+                # if the download takes time, the deployment will start before
+                # the end of the download and fail.
+                FileUtils.mv(srcfile, deployfolder, :force => true)
+                reply.data = result
+            end
+
             action "undeploy" do
                 result = {:status => ""}
 
@@ -460,9 +493,8 @@ module MCollective
                 conffile = '/etc/kermit/kermit.cfg'
                 section = 'jbossas' 
                 source_file = "#{deployfolder}/#{appname}"
-                if not File.exists?(source_file)
+                if not check_app_existence(appname, deployfolder)
                     dbgmsg  = "The backup file for #{appname} was not created. "
-                    dbgmsg << "The app does not exist in the deploy folder."
                     Log.debug(dbgmsg)
                     return false
                 end
@@ -473,6 +505,18 @@ module MCollective
                 FileUtils.cp source_file, dest_file
                 return true
             end
+
+	    def check_app_existence(appname, deployfolder)
+		conffile = '/etc/kermit/kermit.cfg'
+                section = 'jbossas'
+                source_file = "#{deployfolder}/#{appname}"
+                if not File.exists?(source_file)
+                    dbgmsg  = "#{appname} does not exist in deploy folder "
+                    Log.debug(dbgmsg)
+                    return false
+                end
+		return true
+	    end
 
             def rollback(backupfile, deployfolder)
                 conffile = '/etc/kermit/kermit.cfg'

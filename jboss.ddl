@@ -83,6 +83,30 @@ action "deploy", :description => "Deploy an application in JBoss" do
            :display_as  => "Deployed file"
 end
 
+action "redeploy", :description => "Redeploy an application in JBoss" do
+    display :always
+
+    input :appfile,
+          :prompt      => "Appli file name",
+          :description => "File name of the Java application to deploy (i.e. xyz.ear)",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    input :instancename,
+          :prompt      => "Instance name",
+          :description => "Target instance for deploy",
+          :type        => :string,
+          :validation  => '^[a-zA-Z\-_\d\.]+$',
+          :optional    => false,
+          :maxlength   => 40
+
+    output :status,
+           :description => "The status of the deployment",
+           :display_as  => "Deployed file"
+end
+
 action "undeploy", :description => "Undeploy an application in JBoss" do
     display :always
 
