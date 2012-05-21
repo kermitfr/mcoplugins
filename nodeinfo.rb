@@ -39,6 +39,7 @@ module MCollective
 					end
                 end
 
+                #fqdn for windows machine: echo %COMPUTERNAME%.%USERDNSDOMAIN%
                 facts = {'architecture' => RUBY_PLATFORM,
                          'fqdn' => Socket.gethostbyname(Socket.gethostname).first.downcase!,
                          'lsbdistdescription' => lsbdistdesc}
