@@ -1,4 +1,4 @@
-require 'socket'
+ require 'socket'
 module MCollective
     module Agent 
         # Inspired with the agent meta.rb of R.I.Pienaar
@@ -29,14 +29,18 @@ module MCollective
 
                 begin
                     distrel = File.open('/etc/redhat-release','r')
-                    lsbdistdesc=distrel.gets.chomp
+                    lsbdistdesc=distrel.gets
                 rescue
                     #lsbdistdesc='Unknown'
-                    lsbdistdesc=`uname -s -v`.chomp
+					begin
+						lsbdistdesc=`uname -s -v`.chomp
+					rescue
+						lsbdistdesc=`systeminfo | findstr /B /C:"OS Name"`.scan(/OS Name:[\t ]*(.*)/).flatten[0]
+					end
                 end
 
                 facts = {'architecture' => RUBY_PLATFORM,
-                         'fqdn' => Socket.gethostbyname(Socket.gethostname).first,
+                         'fqdn' => Socket.gethostbyname(Socket.gethostname).first.downcase!,
                          'lsbdistdescription' => lsbdistdesc}
                 result[:facts] = facts
 
