@@ -35,27 +35,6 @@ action "reboot", :description => "reboot" do
            :display_as => "output"
 end
 
-action "timegap", :description => "Get the time gap from a ref." do
-    display :always
-
-    input :reftime,
-          :prompt      => "Number of seconds since epoch",
-          :description => "ruby -r time -e 'puts Time.now.to_i'",
-          :type        => :string,
-          :validation  => '^\d*$',
-          :optional    => false,
-          :maxlength   => 10
-
-    output :output,
-           :description => "Time gap between the ref. and the local time (s)",
-           :display_as => "output"
-
-    output :hostname,
-           :description => "The hostname of the node",
-           :display_as => "hostname"
-end
-
-
 action "ntpdate", :description => "ntpdate" do
     input :ntpserver,
           :prompt      => "NTP server",

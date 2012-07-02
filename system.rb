@@ -1,4 +1,3 @@
-require 'time'
 module MCollective
     module Agent
         class System<RPC::Agent
@@ -22,12 +21,6 @@ module MCollective
                 ntpdate
             end
             
-            action "timegap" do
-                validate :reftime, String
-		reply[:output] = Time.now.to_i - request[:reftime].to_i 
-		reply[:hostname] = `hostname`.chomp 
-            end
-
             private
 
             def halt
