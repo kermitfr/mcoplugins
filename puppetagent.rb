@@ -1,8 +1,8 @@
 module MCollective
     module Agent
-        class Puppetmaster<RPC::Agent
-            metadata    :name => "PuppetMaster",
-                        :description => "Puppet Master Operations",
+        class Puppetagent<RPC::Agent
+            metadata    :name => "Puppet Module",
+                        :description => "Puppet Operations",
                         :author => "Marco Mornati",
                         :license => "Apache License 2.0",
                         :version => "0.1",

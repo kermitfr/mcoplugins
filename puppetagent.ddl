@@ -1,5 +1,5 @@
-metadata    :name => "PuppetMaster",
-            :description => "PuppetMaster Operations",
+metadata    :name => "Puppet Module",
+            :description => "Puppet Operations",
             :author => "Marco Mornati",
             :license => "Apache License 2.0",
             :version => "0.1",
