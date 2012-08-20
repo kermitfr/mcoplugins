@@ -13,7 +13,23 @@ module MCollective
 		class_list
 	    end
 
+	    action "forceupdate" do
+		force_update
+	    end
+
             private
+
+	    def force_update
+                puppet = "/usr/bin/puppet"
+                cmd = [puppet, "agent", "--color no", "--onetime", "--verbose",
+                "--ignorecache", "--no-daemonize" , "--no-usecacheonfailure",
+                "--no-splay" ]
+                if request[:server]
+                    cmd << "--server #{request[:server]}"
+                end
+                cmd = cmd.join(" ")
+                reply[:output] = %x[#{cmd}].to_a.last.chomp
+            end
 
 	    def class_list
 		require 'puppet'
