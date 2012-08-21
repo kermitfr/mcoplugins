@@ -18,7 +18,6 @@ require 'json'
 require 'socket'
 require 'curb'
 require 'inifile'
-require "ftools"
 require 'fileutils'
 
 module MCollective
