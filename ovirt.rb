@@ -40,12 +40,13 @@ module MCollective
 		client = ovirt_connection()
 		reply['api_version'] = client.api_version
 	    end
+
 	    action "list_vms" do
 		Log.debug "Executing list_vms Action"
 		client = ovirt_connection()
 		vmlist  = Array.new
 		client.vms.each do |vm|
-   		       vmlist << vm.name
+   		       vmlist << {"name" => vm.name, "id" => vm.id}
 		end
 		reply['vms'] = vmlist
             end
@@ -96,7 +97,7 @@ module MCollective
                         "name" => "#{storage.name}",
                         "kind" => "#{storage.kind}",
                         "path" => "#{storage.path}",
-                        #"role" => "#{storage.role}",
+                        "role" => "#{storage.role}",
                         "address" => "#{storage.address}",
                         "used" => "#{storage.used}",
                         "available" => "#{storage.available}"
@@ -120,6 +121,75 @@ module MCollective
                 response = client.vm_action(vm_id, "stop")
                 reply['status'] = response
 	    end
+
+	    action "create_vm" do
+		Log.debug "Executing create_vm Action"
+		client = ovirt_connection()
+		#VM Information
+		vm_name = "#{request[:name]}"
+		cluster_id = "#{request[:cluster_id]}"
+		template_id = "#{request[:template_id]}"
+		memory = "#{request[:memory]}"
+		opts = {
+			:name => vm_name,
+			:cluster => cluster_id,
+		}
+		unless template_id.nil?
+			opts.update({:template => template_id})
+		end
+		unless memory.nil? 
+                        opts.update({:memory => memory})
+                end
+		Log.info "Creating VM with the following options: #{opts}"
+		new_vm = client.create_vm(opts)
+		Log.info "New VM id: #{new_vm.id}"
+		reply['vm_id'] = new_vm.id
+            end
+
+	    action "add_storage" do
+		Log.debug "Executing add_storage Action"
+                client = ovirt_connection()
+		vm_id = "#{request[:vm_id]}"
+		size = "#{request[:size]}" 
+		type = "#{request[:type]}" 
+		interface = "#{request[:interface]}"
+		format = "#{request[:format]}" 
+		bootable = "#{request[:bootable]}"
+		opts = {
+			:size => size,
+			:type => type,
+			:interface => interface,
+			:format => format
+		}
+
+		unless bootable.nil? 
+                        opts.update({:bootable => bootable})
+                end
+		client.add_volume(vm_id, opts)
+		#TODO: check to improve response
+		reply['status'] = "OK" 
+	    end
+
+	    action "add_network" do
+                Log.debug "Executing create_vm Action"
+                client = ovirt_connection()
+                vm_id = "#{request[:vm_id]}"
+                interface = "#{request[:interface]}"
+                name = "#{request[:name]}"
+                network_name = "#{request[:network_name]}"
+                opts = {
+			:name => name
+		}
+                unless interface.nil?       
+                        opts.update({:interface => interface})
+                end
+                unless network_name.nil?  
+                        opts.update({:network_name => network_name})
+                end
+                client.add_interface(vm_id, opts)
+                #TODO: check to improve response
+                reply['status'] = "OK"
+            end
 
             private
 
