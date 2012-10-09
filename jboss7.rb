@@ -103,11 +103,11 @@ module MCollective
                 deployfolder   = "#{jbosshome}/server/#{instancename}/deploy/"
                 reply.fail! "Error - Unable to find #{deployfolder}" \
                             unless File.directory? deployfolder
-		
-		#Check presence of app to redeploy in deploy folder (app must exist)
-	        reply.fail! "Error - Application do redeploy does not exist in target path" \
-                            unless check_app_existence(appfile, deployfolder)	
-		#Redeploy
+        
+                #Check presence of app to redeploy in deploy folder (app must exist)
+                reply.fail! "Error - Application do redeploy does not exist in target path" \
+                            unless check_app_existence(appfile, deployfolder)   
+                #Redeploy
                 create_backup(appfile, deployfolder)
                 result[:status] = download(repourl, appfile, downloadfolder)
                 srcfile="#{downloadfolder}/#{appfile}"
@@ -199,27 +199,27 @@ module MCollective
 
             # Get the jboss run cmd from the system
             def run_cmd
-		Log.info "Trying to identify JBoss using cmd"
+                Log.info "Trying to identify JBoss using cmd"
                 cmd="/bin/ps aux"
                 cmdout = %x[#{cmd}]
                 cmdout.each_line do |line|
                     next unless line =~ /jboss/
-		    Log.debug line
+                    Log.debug line
                     if line =~ /\/bin\/java\s+/
-			Log.info "JBoss found: #{line}"
+                        Log.info "JBoss found: #{line}"
                         return line
                     end
                 end
-		Log.info "JBoss not found with this method"
+                Log.info "JBoss not found with this method"
                 nil
             end
 
             def guess_jboss_home(cmdline)
-		Log.debug "Trying to detect JBOSS_HOME using jboss.home.dir into jboss process"
+                Log.debug "Trying to detect JBOSS_HOME using jboss.home.dir into jboss process"
                 if cmdline =~ /\s*-Djboss.home.dir=(.*)/
-		    Log.debug "JBoss home found with this method"
-		    Log.debug $1
-                    return $1
+                  Log.debug "JBoss home found with this method"
+                  Log.debug $1
+                  return $1
                 end
                 nil
             end

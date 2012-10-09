@@ -20,8 +20,6 @@ metadata     :name        => "oVirt Agent",
              :url         => "",
              :timeout     => 120
 
-
-
 action "get_api_version", :description => "Get the version of oVirt API in use on the server" do
     display :always
 
@@ -34,13 +32,13 @@ action "list_vms", :description => "Get list of defined virtual machine in the c
     display :always
 
     output :vms,
-	   :description => 'The list of defined Virtual Machines',
-	   :display_as  => "VMs List"
+           :description => 'The list of defined Virtual Machines',
+           :display_as  => "VMs List"
 end
 
 action "vm_details", :description => "Get details of provided Virtual Machine" do
     display :always
-  
+
     input :vm_id,
           :prompt      => "Virtual Machine ID",
           :description => "Virtual Machine Unique Identification",
@@ -50,8 +48,8 @@ action "vm_details", :description => "Get details of provided Virtual Machine" d
           :maxlength   => 37
 
    output :vm,
-           :description => 'Details of selected Virtual Machine',
-           :display_as  => "VM Details"
+          :description => 'Details of selected Virtual Machine',
+          :display_as  => "VM Details"
 end
 
 action "get_clusters", :description => "Get list of defined clusters" do
@@ -90,8 +88,8 @@ action "start_vm", :description => "Start provided Virtual Machine" do
           :maxlength   => 37
 
    output :status,
-           :description => 'Status of VM action',
-           :display_as  => "Status"
+          :description => 'Status of VM action',
+          :display_as  => "Status"
 end
 
 action "stop_vm", :description => "Stop provided Virtual Machine" do
@@ -106,8 +104,8 @@ action "stop_vm", :description => "Stop provided Virtual Machine" do
           :maxlength   => 37
 
    output :status,
-           :description => 'Status of VM action',
-           :display_as  => "Status"
+          :description => 'Status of VM action',
+          :display_as  => "Status"
 end
 
 action "create_vm", :description => "Create a new virtual machine" do
@@ -144,8 +142,8 @@ action "create_vm", :description => "Create a new virtual machine" do
           :optional    => true
 
    output :vm_id,
-           :description => 'ID of created Virtual Machine',
-           :display_as  => "Virtual Machine ID"
+          :description => 'ID of created Virtual Machine',
+          :display_as  => "Virtual Machine ID"
 end
 
 action "add_storage", :description => "Add storage to provided Virtual Machine" do
@@ -166,35 +164,35 @@ action "add_storage", :description => "Add storage to provided Virtual Machine" 
           :optional    => false
 
    input :type,
-          :prompt      => "Storage Type",
-          :description => "Storage Type",
-          :type        => :list,
-          :optional    => false,
-	  :list        => ["system", "data", "iso", "export"]
+         :prompt      => "Storage Type",
+         :description => "Storage Type",
+         :type        => :list,
+         :optional    => false,
+         :list        => ["system", "data", "iso", "export"]
 
    input :interface,
-          :prompt      => "Storage Interface",
-          :description => "Storage Interface",
-          :type        => :list,
-          :optional    => false,
-	  :list        => ["virtio", "ide", "scsi"]
+         :prompt      => "Storage Interface",
+         :description => "Storage Interface",
+         :type        => :list,
+         :optional    => false,
+         :list        => ["virtio", "ide", "scsi"]
 
    input :format,
-          :prompt      => "Storage Format",
-          :description => "Storage Format",
-          :type        => :list,
-          :optional    => false,
-	  :list        => ["cow", "raw"]
+         :prompt      => "Storage Format",
+         :description => "Storage Format",
+         :type        => :list,
+         :optional    => false,
+         :list        => ["cow", "raw"]
 
    input :bootable,
-          :prompt      => "Storage is bootable?",
-          :description => "Bootable flag on storage",
-          :type        => :boolean,
-          :optional    => true
+         :prompt      => "Storage is bootable?",
+         :description => "Bootable flag on storage",
+         :type        => :boolean,
+         :optional    => true
 
    output :status,
-           :description => 'Status of executed operation',
-           :display_as  => "Status"
+          :description => 'Status of executed operation',
+          :display_as  => "Status"
 end
 
 action "add_network", :description => "Add network interface to provided Virtual Machine" do
@@ -211,27 +209,27 @@ action "add_network", :description => "Add network interface to provided Virtual
     input :name,
           :prompt      => "Name",
           :description => "Name",
-	  :validation  => '^[a-zA-Z\-_\d]+$',
+          :validation  => '^[a-zA-Z\-_\d]+$',
           :type        => :string,
           :optional    => false,
-	  :maxlength   => 10
-
-   input :interface,
-          :prompt      => "Network Interface",
-          :description => "Network Interface",
-          :type        => :list,
-          :optional    => true,
-          :list        => ["virtio", "e1000", "rtl8139"]
-
-   input :network_name,
-          :prompt      => "Network Name",
-          :description => "Network Name",
-	  :validation  => '^[a-zA-Z\-_\d]+$',
-          :type        => :string,
-          :optional    => true,
           :maxlength   => 10
 
+   input :interface,
+         :prompt      => "Network Interface",
+         :description => "Network Interface",
+         :type        => :list,
+         :optional    => true,
+         :list        => ["virtio", "e1000", "rtl8139"]
+
+   input :network_name,
+         :prompt      => "Network Name",
+         :description => "Network Name",
+         :validation  => '^[a-zA-Z\-_\d]+$',
+         :type        => :string,
+         :optional    => true,
+         :maxlength   => 10
+
    output :status,
-           :description => 'Status of executed operation',
-           :display_as  => "Status"
+          :description => 'Status of executed operation',
+          :display_as  => "Status"
 end
