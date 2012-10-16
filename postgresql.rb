@@ -71,7 +71,7 @@ module MCollective
 
         action "inventory" do
             reply.fail! "Error - No pgsql server found or started" unless check_pg
-            reply['result'] = inventory
+            reply[:result] = inventory
         end
 
         action "get_databases" do
