@@ -47,7 +47,7 @@ module MCollective
             end
             db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
             db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
-            cmd = ""
+            cmd = "su - postgres -c '"
             if db_password
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
             end
@@ -59,6 +59,7 @@ module MCollective
                 Log.debug "Executing SQL script with provided DBName: #{db_name}"
                 cmd << "psql -U #{db_user} #{db_name} < #{fileout}"
             end
+            cmd << "'"
             Log.debug "Executing command #{cmd}"
             result = %x[#{cmd}]
             shorthostname=`hostname -s`.chomp
@@ -196,12 +197,13 @@ module MCollective
             db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
             db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
             query = 'select version();'
-            cmd = ""
+            cmd = "su - postgres -c '"
             if db_password
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
             end
  
             cmd << "psql -U #{db_user} -d postgres -tc \"#{query}\""
+            cmd << "'"
             Log.debug "Check Postgres Command: #{cmd}"
             %x[#{cmd}]
             return $? == 0
@@ -297,15 +299,13 @@ module MCollective
 
             db_user = Base64.decode64(getkey(conffile, section, 'dbuser'))
             db_password = Base64.decode64(getkey(conffile, section, 'dbpassword'))
-            cmd = ""
+            cmd = "echo \"#{query}\""
+            cmd << " | su - postgres -c '"
             if db_password
                 cmd << "export PGPASSWORD=\"#{db_password}\";"
             end
-            cmd << "psql -U #{db_user} -tc \"#{query}\""
-            if not database.nil?
-               cmd << "psql -U #{db_user} #{database} -tc \"#{query}\""
-            end
-
+            cmd << "psql -U #{db_user} #{database} -t"
+            cmd << "'"
             Log.debug "Command RUN: #{cmd}"
 
             result = %x[#{cmd}]
