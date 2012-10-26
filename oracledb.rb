@@ -81,7 +81,7 @@ END
         action "inventory" do
             reply.fail! "Error - No Oracle server found or started" unless check_oracle
             Log.debug "Check Oracle OK!!"
-            reply['result'] = inventory
+            reply[:result] = inventory
         end
 
         action "export_database" do
