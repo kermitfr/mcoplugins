@@ -20,15 +20,15 @@ module MCollective
         private
 
         def force_update
-                puppet = "/usr/bin/puppet"
-                cmd = [puppet, "agent", "--color no", "--onetime", "--verbose",
-                "--ignorecache", "--no-daemonize" , "--no-usecacheonfailure",
-                "--no-splay" ]
-                if request[:server]
-                    cmd << "--server #{request[:server]}"
-                end
-                cmd = cmd.join(" ")
-                reply[:output] = %x[#{cmd}].to_a.last.chomp
+            puppet = "/usr/bin/puppet"
+            cmd = [puppet, "agent", "--color no", "--onetime", "--verbose",
+            "--ignorecache", "--no-daemonize" , "--no-usecacheonfailure",
+            "--no-splay" ]
+            if request[:server]
+                cmd << "--server #{request[:server]}"
+            end
+            cmd = cmd.join(" ")
+            reply[:output] = %x[#{cmd}].to_a.last.chomp
         end
 
         def class_list
@@ -38,7 +38,7 @@ module MCollective
           begin
               # Works only on a puppet master
               classlist = Puppet::Face[:resource_type,:current].search('.*').find_all {|x| x.type==:hostclass}.collect{|x| x.name}.sort
-          rescue NoMethodError
+          rescue RuntimeError, NoMethodError
               classlist = []
           end
 

@@ -228,7 +228,7 @@ action "add_network", :description => "Add network interface to provided Virtual
           :description => "Network Name",
 	  :validation  => '^[a-zA-Z\-_\d]+$',
           :type        => :string,
-          :optional    => true,
+          :optional    => false,
           :maxlength   => 10
 
    output :status,
