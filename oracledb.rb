@@ -373,9 +373,9 @@ END
             conffile = '/etc/kermit/kermit.cfg'
             section = 'oracledb'
 
-            export_script = getkey(conffile, section, 'db_import_script')
+            import_script = getkey(conffile, section, 'db_import_script')
 
-            cmd = "#{export_script} #{instancename} #{schema} #{file_name}"
+            cmd = "#{import_script} #{instancename} #{schema} #{file_name}"
             result = %x[#{cmd}]
 
             unless $? == 0
