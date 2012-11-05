@@ -1,0 +1,98 @@
+Louis Coilliot (37):
+      first commit
+      agentinfo and nodeinfo
+      package source = download from github
+      gitrev in spec file
+      last changelog of spec file
+      New agent
+      close of rpm db after query
+      instance to local variables
+      avoid locks/hangups with rpm
+      System information compatible with AIX
+      spec chagelog
+      chomp
+      chomp (again)
+      changelog
+      Summary in README
+      puppetagent to refresh puppet on nodes on demand
+      System agent (action : halt)
+      curb (curl ruby) agent
+      string validation
+      actions reboot, ntpdate; option areyoursure
+      New agent = inventory (and JBoss inventory, for a start)
+      Error handling on jboss_ver
+      Send only compact json version
+      JBoss agent
+      Refactor
+      retab
+      tail -n 1000 on log file
+      tabs
+      More generic agent
+      More idiomatic + bugfix
+      Handles the SID and more checks
+      log filename with the shorthostname to avoid collisions
+      new require
+      database 'postgres' as a default
+      Improved guess for javabin
+      Deploy : download THEN mv app in the deploy folder
+      Merge branch 'master' of github.com:thinkfr/mcoplugins
+
+Marco Mornati (47):
+      Added PostgreSQL Agent, first raw version
+      Refactored GetDatabases Method     Added some check control on responses     Generated dict response
+      Refactored SQL execution method
+      Added Database Size Function     Added Get Tables Function     Refactor all other     Completed DDL file
+      Fixed problem executing get_databases     Completed get_tables method
+      Refactored some stuffs
+      Added inventory function to retrieve information about postgresql database
+      Fixed problem on filename
+      Completed Inventory With some useful information of database
+      Fixed bug
+      Added check Postgresql Database     Added Password Version
+      Fixed problem in execute_sql when db with password
+      Added sqllist in PostgreSQL Agent     Created Oracle Agent
+      Merge branch 'master' of github.com:thinkfr/mcoplugins
+      Added Get Log Action
+      Added SendLog operation after sql execution
+      Added base64 decode for usernames and password in the config file     Added examples kermit.cfg file     Create utility to encode string
+      Added information extraction for datasources     Added information extraction for applications
+      Updated OracleDB DDL
+      Added libvirtvnc plugin
+      Completed OracleDB agent
+      Implemented rollback operation
+      Added get sql_list function     Bug fixing
+      Fixed problem when oracle not found on server
+      Fixed problem in get_sql list (cmd wget not run)
+      Missing response for SQL list
+      Added Import Schema action
+      Updated Oracle DDL file
+      Fixed problem in DDL
+      Merge branch 'master' of github.com:thinkfr/mcoplugins
+      Added redeploy application
+      Added new test to detect running jboss instances
+      Added support for windows servers
+      Added comment for windows machine fqdn
+      Added PuppetMaster Agent with Hiera Control
+      Renamed PuppetMaster Module in Puppet
+      Updated puppet agent module
+      Latest PuppetAgent Version
+      Removed useless dependency
+      Added DDL for puppetaget
+      Added oVirt agent (first raw version)     Added Jboss7 Agent (first raw version)
+      Added create virtual machine, add network and storage operations     Created DDL file
+      Fixed problem in puppetagent for Ruby 1.9
+      Merge branch 'master' of github.com:thinkfr/mcoplugins
+      Changed variable name for import script
+      Added DDL file for libvirtvnc Agent
+      Added stop_proxy method
+
+lofic (8):
+      rm puppetagent (no use because of puppetd agent)
+      New action timegap
+      Some actions moved to a check.rb agent
+      New agent for some system checks
+      Exception on classlist for nodes that are not puppetmasters
+      tab cleaning
+      result key as a symbol for homegeneity with other agents
+      su - postgres
+
