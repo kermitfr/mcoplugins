@@ -57,3 +57,20 @@ action "start_proxy", :description => "Start WebSocket Proxy" do
 
 end
 
+action "stop_proxy", :description => "Stop WebSocket Proxy" do
+    display :always
+
+    input :port,
+          :prompt      => "WebSocket Proxy Port",
+          :description => "Proxy port",
+          :validation  => '^[a-zA-Z\-_\d]+$',
+          :type        => :string,
+          :optional    => false,
+          :maxlength   => 20
+
+    output :result,
+           :description => "Result",
+           :display_as  => "Result"
+
+end
+

@@ -36,7 +36,7 @@ module MCollective
                 has_domain?(request[:domain], conn)
 
                 retrieved_domain = conn.lookup_domain_by_name(request[:domain])
-                reply["port"] = extract_vnc_port(retrieved_domain.xml_desc)
+                reply[:port] = extract_vnc_port(retrieved_domain.xml_desc)
             end
 
             action "start_proxy" do
@@ -50,14 +50,26 @@ module MCollective
                 retrieved_domain = conn.lookup_domain_by_name(request[:domain])
                 vnc_port = extract_vnc_port(retrieved_domain.xml_desc)
 
-                cmd = "python /etc/websockify/websockify -D 6080 localhost:#{vnc_port}"
+                cmd = "/usr/bin/websockify -D 6080 localhost:#{vnc_port}"
                 %x[#{cmd}]
                 pid_cmd = "ps -e -o pid,command | grep -v grep | grep websockify | awk '{print $1}'"
                 result = %x[#{pid_cmd}]
                 reply[:pid] = result.strip!
             end
 
+            action "stop_proxy" do
+                validate :port, String
 
+                port = request[:port]
+
+                pid_cmd = "ps -e -o pid,command | grep -v grep | grep #{port} | awk '{print $1}'"
+                result = %x[#{pid_cmd}]
+                kill_cmd = "kill -9 #{result.strip!}"
+                result = %x[#{kill_cmd}]
+                Log.debug "Kill Result: #{result}"
+
+                reply[:result] = (result.strip!.nil? or result.strip!.empty?) ? "OK" : "#{result}"
+            end
 
             private
             def connect
