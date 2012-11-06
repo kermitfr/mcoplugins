@@ -50,7 +50,13 @@ module MCollective
                 retrieved_domain = conn.lookup_domain_by_name(request[:domain])
                 vnc_port = extract_vnc_port(retrieved_domain.xml_desc)
 
-                cmd = "/usr/bin/websockify -D 6080 localhost:#{vnc_port}"
+                reply.fail! "Cannot find VNC Port for the provided domain" unless !(vnc_port.nil?)
+                
+                #Retrieving vnc bind ip address
+                ip_addr_cmd = `ps aux | grep #{request[:domain]}`
+                ip_addr = ip_addr_cmd.scan(/vnc ([\d\.]+)/).flatten[0] 
+                Log.debug "Starting proxy on Port 6080 to #{ip_addr}:#{vnc_port}"
+                cmd = "/usr/bin/websockify -D --run-once 6080 #{ip_addr}:#{vnc_port}"
                 %x[#{cmd}]
                 pid_cmd = "ps -e -o pid,command | grep -v grep | grep websockify | awk '{print $1}'"
                 result = %x[#{pid_cmd}]
@@ -101,7 +107,12 @@ module MCollective
 
             def extract_vnc_port(xml)
                 data = XmlSimple.xml_in xml, { 'ForceArray' => false, 'AttrPrefix' => true }
-                return data["devices"]["graphics"]["@port"] 
+                Log.debug "Data: #{data}"
+                if data["devices"]["graphics"]["@type"] == "vnc"
+                    return data["devices"]["graphics"]["@port"] 
+                else
+                    return nil
+                end
             end
     
         end
