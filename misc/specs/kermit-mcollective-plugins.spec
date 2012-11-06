@@ -1,7 +1,7 @@
 %define plugindir %{_libexecdir}/mcollective/mcollective
 %define agents agentinfo check curb jboss7 jboss libvirtvnc nodeinfo oracledb ovirt postgresql puppetagent sysinventory system
 
-Name: mcollective-plugins
+Name: kermit-mcollective-plugins
 Summary: Collection of Mcollective plugins for KermIT 
 Version: 1.1
 Release: 1%{?dist}
@@ -20,19 +20,20 @@ Packager: Marco Mornati <ilmorna@gmail.com>
 Summary: Skeleton package that pulls in all KermIT Mcollective plugins
 Group: Development/Libraries
 Requires: mcollective
-Requires: mcollective-plugins-agentinfo = %{version}
-Requires: mcollective-plugins-check = %{version}
-Requires: mcollective-plugins-curb = %{version}
-Requires: mcollective-plugins-jboss7 = %{version}
-Requires: mcollective-plugins-jboss = %{version}
-Requires: mcollective-plugins-libvirtvnc = %{version}
-Requires: mcollective-plugins-nodeinfo = %{version}
-Requires: mcollective-plugins-oracledb = %{version}
-Requires: mcollective-plugins-ovirt = %{version}
-Requires: mcollective-plugins-postgresql = %{version}
-Requires: mcollective-plugins-puppetagent = %{version}
-Requires: mcollective-plugins-sysinventory = %{version}
-Requires: mcollective-plugins-system = %{version}
+Requires: kermit-mcollective-plugins-agentinfo = %{version}
+Requires: kermit-mcollective-plugins-check = %{version}
+Requires: kermit-mcollective-plugins-curb = %{version}
+Requires: kermit-mcollective-plugins-jboss7 = %{version}
+Requires: kermit-mcollective-plugins-jboss = %{version}
+Requires: kermit-mcollective-plugins-libvirtvnc = %{version}
+Requires: kermit-mcollective-plugins-nodeinfo = %{version}
+Requires: kermit-mcollective-plugins-oracledb = %{version}
+Requires: kermit-mcollective-plugins-ovirt = %{version}
+Requires: kermit-mcollective-plugins-postgresql = %{version}
+Requires: kermit-mcollective-plugins-puppetagent = %{version}
+Requires: kermit-mcollective-plugins-sysinventory = %{version}
+Requires: kermit-mcollective-plugins-system = %{version}
+Requires: kermit-mcollective-plugins-config = %{version}
 
 %description all
 %{summary}.
@@ -40,7 +41,8 @@ Requires: mcollective-plugins-system = %{version}
 %package agentinfo
 Summary         : Retrieve agents information
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description agentinfo
 %{summary}.
@@ -48,7 +50,8 @@ Requires        : mcollective
 %package check
 Summary         : Various Check on MCollective/Puppet environment
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description check
 %{summary}.
@@ -56,7 +59,8 @@ Requires        : mcollective
 %package curb
 Summary         : Download URL file using Curb/Curl
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description curb
 %{summary}.
@@ -64,7 +68,8 @@ Requires        : mcollective
 %package jboss7
 Summary         : JBoss Application Server 7 Management
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description jboss7
 %{summary}.
@@ -72,7 +77,8 @@ Requires        : mcollective
 %package jboss
 Summary         : JBoss Application Server (<= 6) Management
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description jboss
 %{summary}.
@@ -80,7 +86,8 @@ Requires        : mcollective
 %package libvirtvnc
 Summary         : VNC Console for Libvirt Virtual Machines
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 Requires        : websockify >= 0.2
 Requires        : numpy
 
@@ -90,7 +97,8 @@ Requires        : numpy
 %package nodeinfo
 Summary         : General information on MCollective node
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description nodeinfo
 %{summary}.
@@ -98,7 +106,8 @@ Requires        : mcollective
 %package oracledb
 Summary         : Control Oracle Database
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description oracledb
 %{summary}.
@@ -106,7 +115,8 @@ Requires        : mcollective
 %package ovirt
 Summary         : Create and manage oVirt Virtual Machines
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description ovirt
 %{summary}.
@@ -114,7 +124,8 @@ Requires        : mcollective
 %package postgresql
 Summary         : PostgreSQL Database Management
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description postgresql
 %{summary}.
@@ -122,7 +133,8 @@ Requires        : mcollective
 %package puppetagent
 Summary         : Methods to Control and retrieve information from PuppetMaster server
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description puppetagent
 %{summary}.
@@ -130,7 +142,8 @@ Requires        : mcollective
 %package sysinventory
 Summary         : Get inventory information from the OS
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description sysinventory
 %{summary}.
@@ -138,9 +151,18 @@ Requires        : mcollective
 %package system
 Summary         : Operating System Basic Operations
 Group           : Development/Libraries
-Requires        : mcollective
+Requires        : mcollective >= 2.0.0
+Requires        : kermit-mcollective-plugins-config = %{version}
 
 %description system
+%{summary}.
+
+%package config
+Summary         : Configuration for Kermit Mcollective Plusins
+Group           : Development/Libraries
+Requires        : mcollective >= 2.0.0
+
+%description config
 %{summary}.
 
 %prep
@@ -153,6 +175,9 @@ rm -rf %{buildroot}
 install -d -m 755 %{buildroot}%{plugindir}
 install -d -m 755 %{buildroot}%{plugindir}/agent
 install -d -m 755 %{buildroot}%{plugindir}/application
+install -d -m 755 %{buildroot}/etc/kermit
+
+#Install all defined Agents
 for agent_name in %{agents}; do
     install ${agent_name}/*.* %{buildroot}%{plugindir}/agent
     #if [ -f agent/${agent_name}/application/*.* ]; then
@@ -160,8 +185,15 @@ for agent_name in %{agents}; do
     #fi
 done
 
+#Install Configuration Files
+install misc/kermit.cfg %{buildroot}/etc/kermit
+
 %clean
 rm -rf %{buildroot}
+
+%files config
+%defattr(-,root,root)
+/etc/kermit/kermit.cfg
 
 %files agentinfo
 %defattr(-,root,root)
