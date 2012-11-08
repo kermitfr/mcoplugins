@@ -18,14 +18,6 @@ require 'json'
 module MCollective
     module Agent
         class Libvirtvnc<RPC::Agent
-            metadata :name        => "Libvirt VNC",
-                     :description => "Control VNC Part of Libvirt Virtual Machines",
-                     :author      => "Marco Mornati",
-                     :license     => "",
-                     :version     => "0.1",
-                     :url         => "",
-                     :timeout     => 120
-
 
             action "get_vnc_port" do
                 validate :domain, String

@@ -23,13 +23,6 @@ require 'fileutils'
 module MCollective
     module Agent
         class Jboss<RPC::Agent
-            metadata :name        => "Manage JBoss",
-                     :description => "Jboss inventory and app. deployment",
-                     :author      => "Louis Coilliot",
-                     :license     => "",
-                     :version     => "0.2",
-                     :url         => "",
-                     :timeout     => 120
 
             # JBoss inventory
             action "inventory" do

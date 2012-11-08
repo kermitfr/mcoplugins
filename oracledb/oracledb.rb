@@ -22,13 +22,6 @@ require 'etc'
 module MCollective
     module Agent
         class Oracledb<RPC::Agent
-            metadata    :name        => "oracledb",
-                        :description => "OracleDB Agent", 
-                        :author      => "Marco Mornati",
-                        :license     => "GPLv3",
-                        :version     => "1.0",
-                        :url         => "http://www.kermit.fr",
-                        :timeout     => 60
 
         action "execute_sql" do
             # TODO : set the sid as a parameter

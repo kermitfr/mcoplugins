@@ -1,13 +1,6 @@
 module MCollective
     module Agent
         class Agentinfo<RPC::Agent
-            metadata :name        => "Get informations on agents",
-                     :description => "Get actions, inputs, outputs of agents from the DDL",
-                     :author      => "Louis Coilliot",
-                     :license     => "GPLv3",
-                     :version     => "1.0",
-                     :url         => "http://kermit.fr",
-                     :timeout     => 60
 
             # Get actions, inputs, outputs of agents 
             action "desc" do

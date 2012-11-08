@@ -3,13 +3,6 @@ module MCollective
     module Agent 
         # Inspired with the agent meta.rb of R.I.Pienaar
         class Nodeinfo<RPC::Agent
-            metadata :name        => "Get basic informations on nodes",
-                     :description => "Get the agents, some facts and puppet classes of a node",
-                     :author      => "Louis Coilliot",
-                     :license     => "GPLv3",
-                     :version     => "1.0",
-                     :url         => "http://kermit.fr",
-                     :timeout     => 60
 
             action "basicinfo" do
                 result = {:agentlist => [],

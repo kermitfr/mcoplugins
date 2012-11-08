@@ -21,13 +21,6 @@ require 'base64'
 module MCollective
     module Agent
         class Postgresql<RPC::Agent
-            metadata    :name        => "postgresql",
-                        :description => "PostgreSQL Agent", 
-                        :author      => "Marco Mornati",
-                        :license     => "GPLv3",
-                        :version     => "1.0",
-                        :url         => "http://www.kermit.fr",
-                        :timeout     => 10
 
         action "execute_sql" do
             reply.fail! "Error - No pgsql server found or started" unless check_pg

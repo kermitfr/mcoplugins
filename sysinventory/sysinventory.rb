@@ -1,13 +1,6 @@
 module MCollective
     module Agent
         class Sysinventory<RPC::Agent
-            metadata :name        => "Get inventory information from the OS",
-                     :description => "Inventory of packages, etc.",
-                     :author      => "Louis Coilliot",
-                     :license     => "GPLv3",
-                     :version     => "0.1",
-                     :url         => "",
-                     :timeout     => 60
 
             action "rpmlist" do
               rpmlist = []

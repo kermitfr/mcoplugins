@@ -1,13 +1,6 @@
 module MCollective
     module Agent
         class Puppetagent<RPC::Agent
-            metadata    :name => "Puppet Module",
-                        :description => "Puppet Operations",
-                        :author => "Marco Mornati, Louis Coilliot",
-                        :license => "Apache License 2.0",
-                        :version => "0.2",
-                        :url => "http://www.kermit.fr/",
-                        :timeout => 120
 
         action "classlist" do
           class_list

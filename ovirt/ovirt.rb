@@ -27,13 +27,6 @@ require 'rbovirt'
 module MCollective
     module Agent
         class Ovirt<RPC::Agent
-            metadata :name        => "oVirt Agent",
-                     :description => "Virtual machine management using oVirt API",
-                     :author      => "Marco Mornati",
-                     :license     => "",
-                     :version     => "0.1",
-                     :url         => "",
-                     :timeout     => 120
 
         action "get_api_version" do
           Log.debug "Executing get_api_version action"

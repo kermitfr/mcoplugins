@@ -1,13 +1,6 @@
 module MCollective
     module Agent
         class Curb<RPC::Agent
-            metadata :name        => "curl - transfer a URL",
-                     :description => "Tool to transfer data from or to a server, using URLs",
-                     :author      => "Louis Coilliot",
-                     :license     => "",
-                     :version     => "0.1",
-                     :url         => "",
-                     :timeout     => 30
 
             action "download" do
                 validate :url, String

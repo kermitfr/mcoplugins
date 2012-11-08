@@ -5,13 +5,6 @@ include Sys
 module MCollective
     module Agent
         class Check<RPC::Agent
-            metadata    :name        => "Various checks",
-                        :description => "Various checks",
-                        :author      => "Louis Coilliot",
-                        :license     => "GPLv3",
-                        :version     => "1",
-                        :url         => "",
-                        :timeout     => 10
 
             action "timegap" do
                 validate :reftime, String
