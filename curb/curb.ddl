@@ -24,6 +24,5 @@ action "download", :description => "Download URL" do
    output "downloaded_content_length",
           :description => "Content-length of the download.",
           :display_as  => "Content-length"
-
 end
 

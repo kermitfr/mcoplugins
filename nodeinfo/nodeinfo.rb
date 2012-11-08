@@ -1,4 +1,5 @@
- require 'socket'
+require 'socket'
+
 module MCollective
     module Agent 
         # Inspired with the agent meta.rb of R.I.Pienaar

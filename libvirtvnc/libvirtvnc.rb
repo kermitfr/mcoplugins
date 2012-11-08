@@ -72,11 +72,8 @@ module MCollective
             private
             def connect
                 url = @config.pluginconf["libvirt.url"] || "qemu:///system"
-
                 conn = ::Libvirt::open(url)
-
                 raise "Could not connect to hypervisor" if conn.closed?
-
                 conn
             end
 

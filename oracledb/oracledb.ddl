@@ -23,21 +23,21 @@ metadata     :name        => "Agent to Manage Oracle Database",
 action "execute_sql", :description => "Execute a SQL file on local Oracle database" do
     display :always
 
-    input :sqlfile,
-          :prompt      => "SQL file name",
-          :description => "File name of the SQL file to execute",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :sqlfile,
+           :prompt      => "SQL file name",
+           :description => "File name of the SQL file to execute",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :instancename,
-          :prompt      => "Instance Name",
-          :description => "Name of Oracle Instance to use",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance Name",
+           :description => "Name of Oracle Instance to use",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :logfile,
            :description => "The status of the script execution",
@@ -55,29 +55,29 @@ end
 action "sql_list", :description => "Get list of executable SQLs" do
     display :always
 
-    output :sqllist,
-           :description => "List of executable SQLs scripts",
-           :display_as  => "SQL List"
+    output  :sqllist,
+            :description => "List of executable SQLs scripts",
+            :display_as  => "SQL List"
 end
 
 action "export_database", :description => "Export database schema to filesystem" do
     display :always
 
-    input :instancename,
-          :prompt      => "Instance Name",
-          :description => "Name of Oracle Instance to use",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance Name",
+           :description => "Name of Oracle Instance to use",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :schema,
-          :prompt      => "Schema Name",
-          :description => "Name of Schema to use",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 100
+    input  :schema,
+           :prompt      => "Schema Name",
+           :description => "Name of Schema to use",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 100
 
     output :filename,
            :description => "Name of exported file",
@@ -87,29 +87,29 @@ end
 action "import_database", :description => "Import database schema from a file" do
     display :always
 
-    input :instancename,
-          :prompt      => "Instance Name",
-          :description => "Name of Oracle Instance to use",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance Name",
+           :description => "Name of Oracle Instance to use",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :schema,
-          :prompt      => "Schema Name",
-          :description => "Name of Schema to use",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 100
+    input  :schema,
+           :prompt      => "Schema Name",
+           :description => "Name of Schema to use",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 100
 
-    input :filename,
-          :prompt      => "File Name",
-          :description => "Name of file with exported data",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 200
+    input  :filename,
+           :prompt      => "File Name",
+           :description => "Name of file with exported data",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 200
 
     output :filename,
            :description => "Name of exported file",

@@ -96,11 +96,11 @@ module MCollective
                 deployfolder   = "#{jbosshome}/server/#{instancename}/deploy/"
                 reply.fail! "Error - Unable to find #{deployfolder}" \
                             unless File.directory? deployfolder
-		
-		#Check presence of app to redeploy in deploy folder (app must exist)
-	        reply.fail! "Error - Application do redeploy does not exist in target path" \
+
+                #Check presence of app to redeploy in deploy folder (app must exist)
+                reply.fail! "Error - Application do redeploy does not exist in target path" \
                             unless check_app_existence(appfile, deployfolder)	
-		#Redeploy
+                #Redeploy
                 create_backup(appfile, deployfolder)
                 result[:status] = download(repourl, appfile, downloadfolder)
                 srcfile="#{downloadfolder}/#{appfile}"
@@ -192,35 +192,35 @@ module MCollective
 
             # Get the jboss run cmd from the system
             def run_cmd
-		Log.info "Trying to identify JBoss using cmd"
+                Log.info "Trying to identify JBoss using cmd"
                 cmd="/bin/ps aux"
                 cmdout = %x[#{cmd}]
                 cmdout.each_line do |line|
                     next unless line =~ /jboss/
-		    Log.debug line
+                    Log.debug line
                     if line =~ /\/bin\/run(.jar|.sh)\s+/
-			Log.info "JBoss found: #{line}"
+                        Log.info "JBoss found: #{line}"
                         return line
                     end
                 end
-		Log.info "JBoss not found with this method"
+                Log.info "JBoss not found with this method"
                 nil
             end
 
             # Get the java run cmd from the system
             def java_cmd
-		Log.info "Trying to identify JBoss using java"
+                Log.info "Trying to identify JBoss using java"
                 cmd="/bin/ps aux"
                 cmdout = %x[#{cmd}]
                 cmdout.each_line do |line|
                     next unless line =~ /jboss/
-		    Log.debug line
+                Log.debug line
                     if line =~ /\/bin\/java\s+/
-			Log.info "JBoss found: #{line}"
+                        Log.info "JBoss found: #{line}"
                         return line
                     end
                 end
-		Log.info "JBoss not found with this method"
+                Log.info "JBoss not found with this method"
                 nil
             end
 
@@ -506,8 +506,8 @@ module MCollective
                 return true
             end
 
-	    def check_app_existence(appname, deployfolder)
-		conffile = '/etc/kermit/kermit.cfg'
+            def check_app_existence(appname, deployfolder)
+                conffile = '/etc/kermit/kermit.cfg'
                 section = 'jbossas'
                 source_file = "#{deployfolder}/#{appname}"
                 if not File.exists?(source_file)
@@ -515,8 +515,8 @@ module MCollective
                     Log.debug(dbgmsg)
                     return false
                 end
-		return true
-	    end
+                return true
+            end
 
             def rollback(backupfile, deployfolder)
                 conffile = '/etc/kermit/kermit.cfg'

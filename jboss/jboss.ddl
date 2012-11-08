@@ -15,12 +15,10 @@
 metadata     :name        => "Manage JBoss",
              :description => "Jboss inventory and app. deployment",
              :author      => "Louis Coilliot",
-             :license     => "",
+             :license     => "GPLv3",
              :version     => "0.1",
              :url         => "",
              :timeout     => 120
-
-
 
 action "inventory", :description => "Get inventory information about JBoss" do
     display :always
@@ -33,13 +31,13 @@ end
 action "applist", :description => "List applications available on a repository" do
     display :always
 
-    input :apptype,
-          :prompt      => "Appli type",
-          :description => "ear, jar, etc.",
-          :validation  => '^[a-zA-Z\-_\d]+$',
-          :type        => :string,
-          :optional    => false,
-          :maxlength   => 10
+    input  :apptype,
+           :prompt      => "Appli type",
+           :description => "ear, jar, etc.",
+           :validation  => '^[a-zA-Z\-_\d]+$',
+           :type        => :string,
+           :optional    => false,
+           :maxlength   => 10
 
     output :applist,
            :description => "The list of available apps",
@@ -62,21 +60,21 @@ end
 action "deploy", :description => "Deploy an application in JBoss" do
     display :always
 
-    input :appfile,
-          :prompt      => "Appli file name",
-          :description => "File name of the Java application to deploy (i.e. xyz.ear)",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :appfile,
+           :prompt      => "Appli file name",
+           :description => "File name of the Java application to deploy (i.e. xyz.ear)",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :instancename,
-          :prompt      => "Instance name",
-          :description => "Target instance for deploy",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance name",
+           :description => "Target instance for deploy",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :status,
            :description => "The status of the deployment",
@@ -86,21 +84,21 @@ end
 action "redeploy", :description => "Redeploy an application in JBoss" do
     display :always
 
-    input :appfile,
-          :prompt      => "Appli file name",
-          :description => "File name of the Java application to deploy (i.e. xyz.ear)",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :appfile,
+           :prompt      => "Appli file name",
+           :description => "File name of the Java application to deploy (i.e. xyz.ear)",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :instancename,
-          :prompt      => "Instance name",
-          :description => "Target instance for deploy",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance name",
+           :description => "Target instance for deploy",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :status,
            :description => "The status of the deployment",
@@ -110,21 +108,21 @@ end
 action "undeploy", :description => "Undeploy an application in JBoss" do
     display :always
 
-    input :appfile,
-          :prompt      => "Appli file name",
-          :description => "File name of the Java application to deploy (i.e. xyz.ear)",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :appfile,
+           :prompt      => "Appli file name",
+           :description => "File name of the Java application to deploy (i.e. xyz.ear)",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :instancename,
-          :prompt      => "Instance name",
-          :description => "Target instance for deploy",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance name",
+           :description => "Target instance for deploy",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :status,
            :description => "The status of the deployment",
@@ -134,13 +132,13 @@ end
 action "get_log", :description => "Get JBoss instance log file" do
     display :always
 
-    input :instancename,
-          :prompt      => "Instance name",
-          :description => "Target instance for deploy",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance name",
+           :description => "Target instance for deploy",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :logfile,
            :description => "Server LogFile",
@@ -151,13 +149,13 @@ action "get_app_backups", :description => "Get backups file list for provided
 application" do
     display :always
 
-    input :appname,
-          :prompt      => "Application name",
-          :description => "Name of application",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :appname,
+           :prompt      => "Application name",
+           :description => "Name of application",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :backups,
            :description => "List of application backups",
@@ -167,21 +165,21 @@ end
 action "rollback", :description => "Rollback a deployed application" do
     display :always
 
-    input :backupfile,
-          :prompt      => "Backup file name",
-          :description => "Name of the backup file to use for rollback",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :backupfile,
+           :prompt      => "Backup file name",
+           :description => "Name of the backup file to use for rollback",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :instancename,
-          :prompt      => "Instance name",
-          :description => "Target instance for deploy",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :instancename,
+           :prompt      => "Instance name",
+           :description => "Target instance for deploy",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :logfile,
            :description => "Server LogFile",

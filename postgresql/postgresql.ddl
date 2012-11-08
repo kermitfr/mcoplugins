@@ -23,21 +23,21 @@ metadata     :name        => "Agent to Manage PostgreSQL Database",
 action "execute_sql", :description => "Execute a SQL file on local PostgreSQL database" do
     display :always
 
-    input :sqlfile,
-          :prompt      => "SQL file name",
-          :description => "File name of the SQL file to execute",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :sqlfile,
+           :prompt      => "SQL file name",
+           :description => "File name of the SQL file to execute",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
-    input :dbname,
-          :prompt      => "Database name",
-          :description => "Name of the database where you want to execute script",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => true,
-          :maxlength   => 40
+    input  :dbname,
+           :prompt      => "Database name",
+           :description => "Name of the database where you want to execute script",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => true,
+           :maxlength   => 40
 
     output :logfile,
            :description => "The status of the script execution",
@@ -87,13 +87,13 @@ end
 action "get_database_size", :description => "Get Size of the Given Database" do
     display :always
 
-    input :dbname,
-          :prompt      => "Database Name",
-          :description => "Name of the database to check",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :dbname,
+           :prompt      => "Database Name",
+           :description => "Name of the database to check",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :size,
            :description => "Database Size",
@@ -103,13 +103,13 @@ end
 action "get_tables", :description => "Get Tables in the Given Database" do
     display :always
 
-    input :dbname,
-          :prompt      => "Database Name",
-          :description => "Name of the database to check",
-          :type        => :string,
-          :validation  => '^[a-zA-Z\-_\d\.]+$',
-          :optional    => false,
-          :maxlength   => 40
+    input  :dbname,
+           :prompt      => "Database Name",
+           :description => "Name of the database to check",
+           :type        => :string,
+           :validation  => '^[a-zA-Z\-_\d\.]+$',
+           :optional    => false,
+           :maxlength   => 40
 
     output :tables,
            :description => "List of tables",
