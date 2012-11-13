@@ -22,7 +22,7 @@ require 'fileutils'
 
 module MCollective
     module Agent
-        class Jboss<RPC::Agent
+        class Jboss7<RPC::Agent
 
             # JBoss inventory
             action "inventory" do
