@@ -24,18 +24,52 @@ action "timegap", :description => "Get the time gap from a ref." do
     output  :hostname,
             :description => "The host name",
             :display_as  => "Hostname"
-
 end
 
 action "fsstat", :description => "Get filesystem list and stats" do
     display :always
 
     output  :output,
-            :description => "Time gap between the ref. and the local time (s)",
+            :description => "File system list with space usage",
             :display_as  => "Output"
 
     output  :hostname,
             :description => "The host name",
             :display_as  => "Hostname"
+end
 
+action "pvs", :description => "Report information about LVM physical volumes" do
+    display :always
+
+    output  :output,
+            :description => "List of physical volumes with size",
+            :display_as  => "Output"
+
+    output  :hostname,
+            :description => "The host name",
+            :display_as  => "Hostname"
+end
+
+action "vgs", :description => "Report information about LVM volume groups" do
+    display :always
+
+    output  :output,
+            :description => "List of volume groups with space usage",
+            :display_as  => "Output"
+
+    output  :hostname,
+            :description => "The host name",
+            :display_as  => "Hostname"
+end
+
+action "lvs", :description => "Report information about LVM logical volumes" do
+    display :always
+
+    output  :output,
+            :description => "List of logical volumes with size",
+            :display_as  => "Output"
+
+    output  :hostname,
+            :description => "The host name",
+            :display_as  => "Hostname"
 end
