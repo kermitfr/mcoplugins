@@ -9,7 +9,6 @@ module MCollective
             action "timegap" do
                 validate :reftime, String
                 reply[:output] = Time.now.to_i - request[:reftime].to_i
-                reply[:hostname]   = `hostname`.chomp
             end
 
             action "fsstat" do
@@ -25,7 +24,6 @@ module MCollective
                   fslist[fs.mount_point]['free'] = free
                 end
                 reply[:output] = fslist
-                reply[:hostname] = `hostname`.chomp
             end
 
             action "pvs" do
@@ -38,7 +36,6 @@ module MCollective
                                  'PFree'=> pvs[2]}) 
                 end
                 reply[:output] = pvlist
-                reply[:hostname] = `hostname`.chomp
             end
 
             action "vgs" do
@@ -50,7 +47,6 @@ module MCollective
                                  'VSize' => vgs[3], 'VFree' => vgs[4]})
                 end
                 reply[:output] = vglist
-                reply[:hostname] = `hostname`.chomp
             end
 
             action "lvs" do
@@ -61,7 +57,6 @@ module MCollective
                    lvlist.push({'LV' => lvs[0], 'VG' => lvs[1], 'LSize' => lvs[2]})
                 end
                 reply[:output] = lvlist
-                reply[:hostname] = `hostname`.chomp
             end
 
         end
