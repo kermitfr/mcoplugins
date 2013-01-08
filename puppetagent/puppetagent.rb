@@ -29,6 +29,8 @@ module MCollective
           require 'puppet/face'
 
           begin
+              # for puppet 3 :
+              Puppet.settings.initialize_global_settings(['--confdir=/etc/puppet'])
               # Works only on a puppet master
               classlist = Puppet::Face[:resource_type,:current].search('.*').find_all {|x| x.type==:hostclass}.collect{|x| x.name}.sort
           rescue RuntimeError, NoMethodError
