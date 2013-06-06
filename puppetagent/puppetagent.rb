@@ -30,9 +30,13 @@ module MCollective
 
           begin
               # for puppet 3 :
-              Puppet.settings.initialize_global_settings(['--confdir=/etc/puppet'])
+              ::Puppet.settings.initialize_global_settings(['--confdir=/etc/puppet'])
+	  rescue ::Puppet::DevError
+	      # Already initialized
+	  end
+	  begin
               # Works only on a puppet master
-              classlist = Puppet::Face[:resource_type,:current].search('.*').find_all {|x| x.type==:hostclass}.collect{|x| x.name}.sort
+              classlist = ::Puppet::Face[:resource_type,:current].search('.*').find_all {|x| x.type==:hostclass}.collect{|x| x.name}.sort
           rescue RuntimeError, NoMethodError
               classlist = []
           end
