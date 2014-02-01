@@ -31,7 +31,7 @@ module MCollective
         action "get_api_version" do
           Log.debug "Executing get_api_version action"
           client = ovirt_connection()
-          reply['api_version'] = client.api_version
+          reply[:api_version] = client.api_version
         end
 
         action "list_vms" do
@@ -41,7 +41,7 @@ module MCollective
           client.vms.each do |vm|
                  vmlist << {"name" => vm.name, "id" => vm.id}
           end
-          reply['vms'] = vmlist
+          reply[:vms] = vmlist
         end
 
         action "vm_details" do
@@ -56,7 +56,7 @@ module MCollective
                    "profile" => vm.profile,
                    "status" => vm.status.strip,
                    "vnc" => {"address" => vm.vnc[:address], "port" => vm.vnc[:port]} }
-          reply['vm'] = vmdetails
+          reply[:vm] = vmdetails
         end
 
         action "get_clusters" do
@@ -67,7 +67,7 @@ module MCollective
                   clusters << {"name" => "#{cluster.name}",
                                "id" => "#{cluster.id}"}
           end
-          reply["clusters"] = clusters
+          reply[:clusters] = clusters
         end
 
         action "get_templates" do
@@ -78,7 +78,7 @@ module MCollective
                    templates <<  {"name" => "#{template.name}",
                                   "id" => "#{template.id}"}
            end
-           reply["templates"] = templates
+           reply[:templates] = templates
         end
 
         action "get_storagedomains" do
@@ -96,7 +96,7 @@ module MCollective
                   "available" => "#{storage.available}"
            }
            end
-          reply["storagedomains"] = storagedomains
+          reply[:storagedomains] = storagedomains
         end
 
         action "start_vm" do
@@ -104,7 +104,7 @@ module MCollective
           client = ovirt_connection()
           vm_id = "#{request[:vm_id]}"
           response = client.vm_action(vm_id, "start")
-          reply['status'] = response
+          reply[:status] = response
         end
 
         action "stop_vm" do
@@ -112,7 +112,7 @@ module MCollective
           client = ovirt_connection()
           vm_id = "#{request[:vm_id]}"
           response = client.vm_action(vm_id, "stop")
-          reply['status'] = response
+          reply[:status] = response
         end
 
         action "create_vm" do
@@ -136,7 +136,7 @@ module MCollective
           Log.info "Creating VM with the following options: #{opts}"
           new_vm = client.create_vm(opts)
           Log.info "New VM id: #{new_vm.id}"
-          reply['vm_id'] = new_vm.id
+          reply[:vm_id] = new_vm.id
         end
 
         action "add_storage" do
@@ -159,7 +159,7 @@ module MCollective
           end
           client.add_volume(vm_id, opts)
           #TODO: check to improve response
-          reply['status'] = "OK" 
+          reply[:status] = "OK" 
         end
 
         action "add_network" do
@@ -178,7 +178,7 @@ module MCollective
            end
            client.add_interface(vm_id, opts)
            #TODO: check to improve response
-           reply['status'] = "OK"
+           reply[:status] = "OK"
         end
 
         private
